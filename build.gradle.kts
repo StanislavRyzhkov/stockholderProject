@@ -13,6 +13,7 @@ java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
 	mavenCentral()
+//	maven(url = "<MAVEN REPO URL>")
 }
 
 dependencies {
@@ -23,6 +24,9 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+	implementation("io.jsonwebtoken:jjwt-impl:0.10.7")
+	implementation("io.jsonwebtoken:jjwt-api:0.10.7")
+	implementation("io.jsonwebtoken:jjwt-jackson:0.10.7")
 	testImplementation("org.springframework.boot:spring-boot-starter-test") {
 		exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
 	}
