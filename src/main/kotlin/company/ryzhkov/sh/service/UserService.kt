@@ -1,5 +1,7 @@
 package company.ryzhkov.sh.service
 
+import arrow.core.Either
+import arrow.fx.reactor.k
 import company.ryzhkov.sh.entity.*
 import company.ryzhkov.sh.exception.AlreadyExistsException
 import company.ryzhkov.sh.exception.AuthException
@@ -29,6 +31,7 @@ import reactor.core.publisher.Mono
 import java.util.*
 import javax.annotation.PostConstruct
 
+
 @Service class UserService @Autowired constructor(
     private val userRepository: UserRepository,
     private val passwordEncoder: BCryptPasswordEncoder,
@@ -36,6 +39,24 @@ import javax.annotation.PostConstruct
 ) : ReactiveUserDetailsService {
 
     private val log: org.slf4j.Logger = org.slf4j.LoggerFactory.getLogger(UserService::class.java)
+
+    fun registerArrow(register: Register): Mono<Either<String, String>> = Mono
+        .zip(checkUsernameUnique(register.username), checkEmailUnique(register.email))
+        .flatMap {
+            when {
+                !it.t1 -> Mono.just(Either.left(USER_ALREADY_EXISTS))
+                !it.t2 -> Mono.just(Either.left(USER_ALREADY_EXISTS))
+                else -> {
+                    val passwordHash = passwordEncoder.encode(register.password1)
+                    userRepository.save(User(
+                        username = register.username,
+                        email = register.email,
+                        password = passwordHash,
+                        roles = Collections.singletonList("ROLE_USER")
+                    )).map { Either.right("OK") }
+                }
+            }
+        }
 
     override fun findByUsername(username: String): Mono<UserDetails> =
         findActiveUserByUsername(username)
@@ -124,6 +145,13 @@ import javax.annotation.PostConstruct
                 .subscribe { log.info("Admin {} successfully created", it.username) }
         }
     }
+
+    fun findBar(username: String): Mono<Either<String, User>> = userRepository
+        .findByUsername(username)
+        .map { ban(it)}
+        .defaultIfEmpty(Either.left("ERROR"))
+
+    fun ban(user: User): Either<String, User> = Either.right(user)
 
     private fun findAnyUserByUsername(username: String): Mono<User> = userRepository
         .findByUsername(username)
