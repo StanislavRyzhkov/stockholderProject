@@ -7,6 +7,7 @@ import company.ryzhkov.sh.entity.TextInfo
 import company.ryzhkov.sh.exception.AuthException
 import company.ryzhkov.sh.exception.NotFoundException
 import company.ryzhkov.sh.service.TextService
+import company.ryzhkov.sh.util.Constants.ACCESS_DENIED
 import company.ryzhkov.sh.util.Constants.REPLY_CREATED
 import company.ryzhkov.sh.util.Constants.TEXT_NOT_FOUND
 import org.springframework.beans.factory.annotation.Autowired
@@ -45,5 +46,5 @@ class ArticleController @Autowired constructor(
     ): Mono<Message> = textService
         .createReply(authenticationMono, createReplyMono)
         .map { Message(REPLY_CREATED) }
-        .switchIfEmpty(Mono.error(AuthException("")))
+        .switchIfEmpty(Mono.error(AuthException(ACCESS_DENIED)))
 }
