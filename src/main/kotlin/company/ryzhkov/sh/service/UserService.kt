@@ -1,9 +1,8 @@
 package company.ryzhkov.sh.service
 
+import arrow.core.*
 import company.ryzhkov.sh.entity.*
-import company.ryzhkov.sh.exception.AlreadyExistsException
 import company.ryzhkov.sh.exception.AuthException
-import company.ryzhkov.sh.exception.NotFoundException
 import company.ryzhkov.sh.repository.UserRepository
 import company.ryzhkov.sh.security.GeneralUser
 import company.ryzhkov.sh.util.Constants.ACCESS_DENIED
@@ -14,10 +13,10 @@ import company.ryzhkov.sh.util.Constants.EMAIL_ALREADY_EXISTS
 import company.ryzhkov.sh.util.Constants.INVALID_USERNAME_OR_PASSWORD
 import company.ryzhkov.sh.util.Constants.PASSWORD_UPDATED
 import company.ryzhkov.sh.util.Constants.USER_ALREADY_EXISTS
-import company.ryzhkov.sh.util.Constants.USER_CREATED
 import company.ryzhkov.sh.util.Constants.USER_DELETED
-import company.ryzhkov.sh.util.Constants.USER_NOT_FOUND
 import company.ryzhkov.sh.util.Constants.USER_UPDATED
+import company.ryzhkov.sh.util.toEitherRight
+import company.ryzhkov.sh.util.toMonoEitherLeft
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.ApplicationArguments
 import org.springframework.security.authentication.BadCredentialsException
@@ -39,26 +38,35 @@ import javax.annotation.PostConstruct
 
     override fun findByUsername(username: String): Mono<UserDetails> =
         findActiveUserByUsername(username)
-            .map { GeneralUser.createInstance(it) }
-            .onErrorMap(NotFoundException::class.java) {
-                BadCredentialsException(INVALID_USERNAME_OR_PASSWORD)
+            .map {
+                when(it) {
+                    is Some -> GeneralUser.createInstance(it.t)
+                    is None -> throw BadCredentialsException(INVALID_USERNAME_OR_PASSWORD)
+                }
             }
 
-    fun register(register: Register): Mono<String> = checkUsernameUnique(register.username)
-        .zipWith(checkEmailUnique(register.email))
-        .flatMap { tuple ->
-            if (!tuple.t1) throw AlreadyExistsException(USER_ALREADY_EXISTS)
-            if (!tuple.t2) throw AlreadyExistsException(EMAIL_ALREADY_EXISTS)
-            val passwordHash = passwordEncoder.encode(register.password1)
-            userRepository.save(User(
-                username = register.username,
-                email = register.email,
-                password = passwordHash,
-                roles = Collections.singletonList("ROLE_USER")
-            ))
+    fun register(register: Register): Mono<Either<Message, User>> = Mono
+        .zip(
+            checkUsernameUnique(register.username),
+            checkEmailUnique(register.email)
+        )
+        .flatMap { tuple2 ->
+            when {
+                !tuple2.t1 -> USER_ALREADY_EXISTS.toMonoEitherLeft()
+                !tuple2.t2 -> EMAIL_ALREADY_EXISTS.toMonoEitherLeft()
+                else -> {
+                    val passwordHash = passwordEncoder.encode(register.password1)
+                    userRepository
+                        .save(User(
+                            username = register.username,
+                            email = register.email,
+                            password = passwordHash,
+                            roles = Collections.singletonList("ROLE_USER"))
+                        )
+                        .map { it.toEitherRight() }
+                }
+            }
         }
-        .doOnNext { user -> log.info("{} created", user.toString()) }
-        .map { USER_CREATED }
 
     fun updateAccount(userDetails: UserDetails, updateAccount: UpdateAccount): Mono<String> {
         val user = (userDetails as GeneralUser).user
@@ -125,25 +133,29 @@ import javax.annotation.PostConstruct
         }
     }
 
-    private fun findAnyUserByUsername(username: String): Mono<User> = userRepository
-        .findByUsername(username)
-        .switchIfEmpty(Mono.error(NotFoundException(USER_NOT_FOUND)))
+    private fun findAnyUserByUsername(username: String): Mono<Option<User>> =
+        userRepository
+            .findByUsername(username)
+            .map { it.toOption() }
+            .defaultIfEmpty(None)
 
-    private fun findActiveUserByUsername(username: String): Mono<User> = userRepository
-        .findByUsernameAndStatus(username, "ACTIVE")
-        .switchIfEmpty(Mono.error(NotFoundException(USER_NOT_FOUND)))
+    private fun findActiveUserByUsername(username: String): Mono<Option<User>> =
+        userRepository
+            .findByUsernameAndStatus(username, "ACTIVE")
+            .map { it.toOption() }
+            .defaultIfEmpty(None)
 
-    private fun findAnyUserByEmail(email: String): Mono<User> = userRepository
-        .findByEmail(email)
-        .switchIfEmpty(Mono.error(NotFoundException(USER_NOT_FOUND)))
+    private fun findAnyUserByEmail(email: String): Mono<Option<User>> =
+        userRepository
+            .findByEmail(email)
+            .map { it.toOption() }
+            .defaultIfEmpty(None)
 
     private fun checkUsernameUnique(username: String): Mono<Boolean> =
         findAnyUserByUsername(username)
-            .map { false }
-            .onErrorResume(NotFoundException::class.java) { Mono.just(true) }
+            .map { it is None }
 
     private fun checkEmailUnique(email: String): Mono<Boolean> =
         findAnyUserByEmail(email)
-            .map { false }
-            .onErrorResume(NotFoundException::class.java) { Mono.just(true) }
+            .map { it is None }
 }

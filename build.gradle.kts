@@ -5,6 +5,7 @@ plugins {
 	id("io.spring.dependency-management") version "1.0.8.RELEASE"
 	kotlin("jvm") version "1.3.61"
 	kotlin("plugin.spring") version "1.3.61"
+	kotlin("kapt") version "1.3.61"
 }
 
 group = "company.ryzhkov"
@@ -13,7 +14,9 @@ java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
 	mavenCentral()
-//	maven(url = "<MAVEN REPO URL>")
+	jcenter()
+	maven { setUrl("https://dl.bintray.com/arrow-kt/arrow-kt/")}
+	maven { setUrl("https://oss.jfrog.org/artifactory/oss-snapshot-local/") }
 }
 
 dependencies {
@@ -32,6 +35,10 @@ dependencies {
 	}
 	testImplementation("io.projectreactor:reactor-test")
 	testImplementation("org.springframework.security:spring-security-test")
+
+	implementation ("io.arrow-kt:arrow-core:0.10.4")
+	implementation ("io.arrow-kt:arrow-syntax:0.10.4")
+	kapt    ("io.arrow-kt:arrow-meta:0.10.4")
 }
 
 tasks.withType<Test> {
