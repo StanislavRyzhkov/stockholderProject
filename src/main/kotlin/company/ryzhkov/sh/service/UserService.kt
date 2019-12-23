@@ -50,23 +50,25 @@ import javax.annotation.PostConstruct
             checkUsernameUnique(register.username),
             checkEmailUnique(register.email)
         )
-        .flatMap { tuple2 ->
+        .flatMap {
             when {
-                !tuple2.t1 -> USER_ALREADY_EXISTS.toMonoEitherLeft()
-                !tuple2.t2 -> EMAIL_ALREADY_EXISTS.toMonoEitherLeft()
-                else -> {
-                    val passwordHash = passwordEncoder.encode(register.password1)
-                    userRepository
-                        .save(User(
-                            username = register.username,
-                            email = register.email,
-                            password = passwordHash,
-                            roles = Collections.singletonList("ROLE_USER"))
-                        )
-                        .map { it.toEitherRight() }
-                }
+                !it.t1 -> USER_ALREADY_EXISTS.toMonoEitherLeft()
+                !it.t2 -> EMAIL_ALREADY_EXISTS.toMonoEitherLeft()
+                else -> handleRegistration(register)
             }
         }
+
+    fun handleRegistration(register: Register): Mono<Either<Message, User>> {
+        val passwordHash = passwordEncoder.encode(register.password1)
+        return userRepository
+            .save(User(
+                username = register.username,
+                email = register.email,
+                password = passwordHash,
+                roles = Collections.singletonList("ROLE_USER"))
+            )
+            .map { it.toEitherRight() }
+    }
 
     fun updateAccount(userDetails: UserDetails, updateAccount: UpdateAccount): Mono<String> {
         val user = (userDetails as GeneralUser).user
