@@ -3,6 +3,8 @@ package company.ryzhkov.sh.controller
 import company.ryzhkov.sh.entity.*
 import company.ryzhkov.sh.security.GeneralUser
 import company.ryzhkov.sh.service.UserService
+import company.ryzhkov.sh.util.Constants.USER_DELETED
+import company.ryzhkov.sh.util.Constants.USER_UPDATED
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
@@ -21,54 +23,32 @@ class AccountController @Autowired constructor(
     @GetMapping(value = ["username"])
     @PreAuthorize(value = "hasRole('USER')")
     fun getUsername(authenticationMono: Mono<Authentication>): Mono<Message> = authenticationMono
-        .map { authentication ->
-            (authentication.principal as UserDetails).username
-        }
+        .map { authentication -> (authentication.principal as UserDetails).username }
         .map { Message(it) }
 
     @GetMapping(value = ["account"])
     @PreAuthorize(value = "hasRole('USER')")
     fun getAccount(authenticationMono: Mono<Authentication>): Mono<Account> = authenticationMono
-        .map { authentication ->
-            (authentication.principal as UserDetails) as GeneralUser
-        }
+        .map { authentication -> (authentication.principal as UserDetails) as GeneralUser }
         .map { Account.createInstance(it.user) }
 
     @PutMapping(value = ["account"])
     @PreAuthorize(value = "hasRole('USER')")
     fun updateAccount(
         authenticationMono: Mono<Authentication>,
-
-        @Valid
-        @RequestBody
-        updateAccountMono: Mono<UpdateAccount>
-
-    ): Mono<Message> = authenticationMono
-        .zipWith(updateAccountMono)
-        .flatMap { tuple ->
-            val userDetails = tuple.t1.principal as UserDetails
-            val updateAccount = tuple.t2
-            userService.updateAccount(userDetails, updateAccount)
-        }
-        .map { Message(it) }
+        @Valid @RequestBody updateAccountMono: Mono<UpdateAccount>
+    ): Mono<Message> = userService
+        .updateAccount(authenticationMono, updateAccountMono)
+        .map { Message(USER_UPDATED) }
 
     @DeleteMapping(value = ["account"])
     @PreAuthorize(value = "hasRole('USER')")
     fun deleteAccount(
         authenticationMono: Mono<Authentication>,
-
-        @Valid
-        @RequestBody
-        deleteAccountMono: Mono<DeleteAccount>
-
-    ): Mono<Message> = authenticationMono
-        .zipWith(deleteAccountMono)
-        .flatMap { tuple ->
-            val userDetails = tuple.t1.principal as UserDetails
-            val deleteAccount = tuple.t2
-            userService.deleteAccount(userDetails, deleteAccount)
-        }
-        .map { Message(it) }
+        @Valid @RequestBody deleteAccountMono: Mono<DeleteAccount>
+    ): Mono<Message> = userService
+        .deleteAccount(authenticationMono, deleteAccountMono)
+        .map { Message(USER_DELETED) }
 
     @PutMapping(value = ["password"])
     @PreAuthorize(value = "hasRole('USER')")

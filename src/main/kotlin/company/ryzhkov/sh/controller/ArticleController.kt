@@ -36,10 +36,17 @@ class ArticleController @Autowired constructor(
     @PreAuthorize(value = "hasRole('USER')")
     fun createReply(
         authenticationMono: Mono<Authentication>,
-        @Valid @RequestBody createReplyMono: Mono<CreateReply>
-    ): Mono<Message> = authenticationMono.zipWith(createReplyMono).flatMap { tuple ->
-        val userDetails = tuple.t1.principal as UserDetails
-        val createReply = tuple.t2
-        textService.createReply(userDetails, createReply)
-    }.map { Message(it) }
+
+        @Valid
+        @RequestBody
+        createReplyMono: Mono<CreateReply>
+
+    ): Mono<Message> = authenticationMono
+        .zipWith(createReplyMono)
+        .flatMap { tuple ->
+            val userDetails = tuple.t1.principal as UserDetails
+            val createReply = tuple.t2
+            textService.createReply(userDetails, createReply)
+        }
+        .map { Message(it) }
 }

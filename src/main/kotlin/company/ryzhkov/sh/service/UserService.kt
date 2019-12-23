@@ -3,7 +3,6 @@ package company.ryzhkov.sh.service
 import company.ryzhkov.sh.entity.*
 import company.ryzhkov.sh.exception.AlreadyExistsException
 import company.ryzhkov.sh.exception.AuthException
-import company.ryzhkov.sh.exception.NotFoundException
 import company.ryzhkov.sh.repository.UserRepository
 import company.ryzhkov.sh.security.GeneralUser
 import company.ryzhkov.sh.util.Constants.ACCESS_DENIED
@@ -12,20 +11,18 @@ import company.ryzhkov.sh.util.Constants.ADMIN_PASSWORD
 import company.ryzhkov.sh.util.Constants.ADMIN_USERNAME
 import company.ryzhkov.sh.util.Constants.EMAIL_ALREADY_EXISTS
 import company.ryzhkov.sh.util.Constants.INVALID_USERNAME_OR_PASSWORD
-import company.ryzhkov.sh.util.Constants.PASSWORD_UPDATED
 import company.ryzhkov.sh.util.Constants.USER_ALREADY_EXISTS
-import company.ryzhkov.sh.util.Constants.USER_CREATED
-import company.ryzhkov.sh.util.Constants.USER_DELETED
-import company.ryzhkov.sh.util.Constants.USER_NOT_FOUND
-import company.ryzhkov.sh.util.Constants.USER_UPDATED
+import company.ryzhkov.sh.util.fix
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.ApplicationArguments
 import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.core.Authentication
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
+import reactor.core.scheduler.Schedulers
 import java.util.*
 import javax.annotation.PostConstruct
 
@@ -37,78 +34,66 @@ import javax.annotation.PostConstruct
 
     private val log: org.slf4j.Logger = org.slf4j.LoggerFactory.getLogger(UserService::class.java)
 
-    override fun findByUsername(username: String): Mono<UserDetails> =
-        findActiveUserByUsername(username)
-            .map { GeneralUser.createInstance(it) }
-            .onErrorMap(NotFoundException::class.java) {
-                BadCredentialsException(INVALID_USERNAME_OR_PASSWORD)
+    override fun findByUsername(username: String): Mono<UserDetails> = userRepository
+        .findByUsernameAndStatus(username, "ACTIVE")
+        .map { GeneralUser.createInstance(it) }
+        .switchIfEmpty(Mono.error(BadCredentialsException(INVALID_USERNAME_OR_PASSWORD)))
+
+    fun register(register: Register): Mono<User> = Mono
+        .zip(checkUsernameUnique(register.username), checkEmailUnique(register.email))
+        .flatMap { when {
+            !it.t1 -> Mono.error(AlreadyExistsException(USER_ALREADY_EXISTS))
+            !it.t2 -> Mono.error(AlreadyExistsException(EMAIL_ALREADY_EXISTS))
+            else -> {
+                val passwordHash = passwordEncoder.encode(register.password1)
+                userRepository.save(User(
+                    username = register.username,
+                    email = register.email,
+                    password = passwordHash,
+                    roles = Collections.singletonList("ROLE_USER")
+                ))
             }
+        } }
 
-    fun register(register: Register): Mono<String> = checkUsernameUnique(register.username)
-        .zipWith(checkEmailUnique(register.email))
-        .flatMap { tuple ->
-            if (!tuple.t1) throw AlreadyExistsException(USER_ALREADY_EXISTS)
-            if (!tuple.t2) throw AlreadyExistsException(EMAIL_ALREADY_EXISTS)
-            val passwordHash = passwordEncoder.encode(register.password1)
-            userRepository.save(User(
-                username = register.username,
-                email = register.email,
-                password = passwordHash,
-                roles = Collections.singletonList("ROLE_USER")
-            ))
-        }
-        .doOnNext { user -> log.info("{} created", user.toString()) }
-        .map { USER_CREATED }
-
-    fun updateAccount(userDetails: UserDetails, updateAccount: UpdateAccount): Mono<String> {
-        val user = (userDetails as GeneralUser).user
-        val (firstName, secondName, phoneNumber) = updateAccount
-        val updatedUser = user.copy(
-            firstName = firstName,
-            secondName = secondName,
-            phoneNumber = phoneNumber
-        )
-        return userRepository
-            .save(updatedUser)
-            .doOnNext { log.info("{} updated", it.toString()) }
-            .map { USER_UPDATED }
-    }
-
-    fun deleteAccount(userDetails: UserDetails, deleteAccount: DeleteAccount): Mono<String> {
-        val (username, password1, _) = deleteAccount
-
-        if (username != userDetails.username) {
-            throw AuthException(ACCESS_DENIED)
+    fun updateAccount(authMono: Mono<Authentication>, updateAccountMono: Mono<UpdateAccount>): Mono<User> = Mono
+        .zip(authMono, updateAccountMono)
+        .flatMap {
+            val user = it.t1.fix()
+            val (firstName, secondName, phoneNumber) = it.t2
+            val updatedUser = user.copy(firstName = firstName, secondName = secondName, phoneNumber = phoneNumber)
+            userRepository.save(updatedUser)
         }
 
-        if (!passwordEncoder.matches(password1, userDetails.password)) {
-            throw AuthException(INVALID_USERNAME_OR_PASSWORD)
+    fun deleteAccount(monoAuth: Mono<Authentication>, monoDeleteAccount: Mono<DeleteAccount>): Mono<User> = Mono
+        .zip(monoAuth, monoDeleteAccount)
+        .flatMap {
+            val user = it.t1.fix()
+            val deleteAccount = it.t2
+            val (username, password1, _) = deleteAccount
+
+            if (username != user.username)
+                return@flatMap Mono.error(AuthException(ACCESS_DENIED))
+
+            if (!passwordEncoder.matches(password1, user.password))
+                return@flatMap Mono.error(AuthException(INVALID_USERNAME_OR_PASSWORD))
+
+            val deletedUser = user.copy(status = "DELETED")
+            userRepository.save(deletedUser)
         }
 
-        val user = (userDetails as GeneralUser).user
-        val deletedUser = user.copy(status = "DELETED")
-
-        return userRepository
-            .save(deletedUser)
-            .doOnNext { log.info("{} deleted", it.toString()) }
-            .map { USER_DELETED }
-    }
-
-    fun updatePassword(userDetails: UserDetails, updatePassword: UpdatePassword): Mono<String> {
-        val (oldPassword, newPassword1, _) = updatePassword
-
-        if (!passwordEncoder.matches(oldPassword, userDetails.password)) {
-            throw AuthException(INVALID_USERNAME_OR_PASSWORD)
+    fun updatePassword(
+        authenticationMono: Mono<Authentication>,
+        updatePasswordMono: Mono<UpdatePassword>
+    ): Mono<User> = Mono
+        .zip(authenticationMono, updatePasswordMono)
+        .flatMap {
+            val user = it.t1.fix()
+            val (oldPassword, newPassword1, _) = it.t2
+            if (!passwordEncoder.matches(oldPassword, user.password))
+                return@flatMap Mono.error(AuthException(INVALID_USERNAME_OR_PASSWORD))
+            val userWithUpdatedPassword = user.copy(password = passwordEncoder.encode(newPassword1))
+            userRepository.save(userWithUpdatedPassword)
         }
-
-        val user = (userDetails as GeneralUser).user
-        val userWithUpdatedPassword = user.copy(password = passwordEncoder.encode(newPassword1))
-
-        return userRepository
-            .save(userWithUpdatedPassword)
-            .doOnNext { log.info("{} password updated", it.toString()) }
-            .map { PASSWORD_UPDATED }
-    }
 
     @PostConstruct fun createAdminUser() {
         if ("--admin" in applicationArguments.sourceArgs) {
@@ -121,29 +106,18 @@ import javax.annotation.PostConstruct
 
             userRepository
                 .insert(user)
+                .subscribeOn(Schedulers.elastic())
                 .subscribe { log.info("Admin {} successfully created", it.username) }
         }
     }
 
-    private fun findAnyUserByUsername(username: String): Mono<User> = userRepository
+    private fun checkUsernameUnique(username: String): Mono<Boolean> = userRepository
         .findByUsername(username)
-        .switchIfEmpty(Mono.error(NotFoundException(USER_NOT_FOUND)))
+        .map { false }
+        .defaultIfEmpty(true)
 
-    private fun findActiveUserByUsername(username: String): Mono<User> = userRepository
-        .findByUsernameAndStatus(username, "ACTIVE")
-        .switchIfEmpty(Mono.error(NotFoundException(USER_NOT_FOUND)))
-
-    private fun findAnyUserByEmail(email: String): Mono<User> = userRepository
+    private fun checkEmailUnique(email: String): Mono<Boolean> = userRepository
         .findByEmail(email)
-        .switchIfEmpty(Mono.error(NotFoundException(USER_NOT_FOUND)))
-
-    private fun checkUsernameUnique(username: String): Mono<Boolean> =
-        findAnyUserByUsername(username)
-            .map { false }
-            .onErrorResume(NotFoundException::class.java) { Mono.just(true) }
-
-    private fun checkEmailUnique(email: String): Mono<Boolean> =
-        findAnyUserByEmail(email)
-            .map { false }
-            .onErrorResume(NotFoundException::class.java) { Mono.just(true) }
+        .map { false }
+        .defaultIfEmpty(true)
 }
