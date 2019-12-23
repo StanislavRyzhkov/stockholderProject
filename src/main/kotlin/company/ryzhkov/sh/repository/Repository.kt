@@ -1,8 +1,8 @@
 package company.ryzhkov.sh.repository
 
 import company.ryzhkov.sh.entity.KeyElement
-//import company.ryzhkov.sh.entity.Recall
-//import company.ryzhkov.sh.entity.Text
+import company.ryzhkov.sh.entity.Recall
+import company.ryzhkov.sh.entity.Text
 import company.ryzhkov.sh.entity.User
 import org.springframework.data.domain.Pageable
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository
@@ -21,13 +21,13 @@ import reactor.core.publisher.Mono
 
 @Repository interface KeyElementRepository : ReactiveMongoRepository<KeyElement, String>
 
-//@Repository interface TextRepository : ReactiveMongoRepository<Text, String> {
-//
-//    fun findByEnglishTitle(englishTitle: String): Mono<Text>
-//
-//    fun findByKindOrderByCreatedDesc(kind: String): Flux<Text>
-//
-//    fun findByKindOrderByCreatedDesc(kind: String, pageable: Pageable): Flux<Text>
-//}
-//
-//@Repository interface RecallRepository : ReactiveMongoRepository<Recall, String>
+@Repository interface TextRepository : ReactiveMongoRepository<Text, String> {
+
+    fun findByEnglishTitle(englishTitle: String): Mono<Text>
+
+    fun findByKindOrderByCreatedDesc(kind: String): Flux<Text>
+
+    fun findByKindOrderByCreatedDesc(kind: String, pageable: Pageable): Flux<Text>
+}
+
+@Repository interface RecallRepository : ReactiveMongoRepository<Recall, String>
