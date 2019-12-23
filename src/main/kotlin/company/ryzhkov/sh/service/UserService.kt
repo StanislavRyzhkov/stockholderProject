@@ -72,10 +72,10 @@ import javax.annotation.PostConstruct
             val (username, password1, _) = deleteAccount
 
             if (username != user.username)
-                return@flatMap Mono.error(AuthException(ACCESS_DENIED))
+                return@flatMap Mono.error<User>(AuthException(ACCESS_DENIED))
 
             if (!passwordEncoder.matches(password1, user.password))
-                return@flatMap Mono.error(AuthException(INVALID_USERNAME_OR_PASSWORD))
+                return@flatMap Mono.error<User>(AuthException(INVALID_USERNAME_OR_PASSWORD))
 
             val deletedUser = user.copy(status = "DELETED")
             userRepository.save(deletedUser)
