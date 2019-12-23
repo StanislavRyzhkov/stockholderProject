@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.ReactiveUserDetailsService
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
+import reactor.core.scheduler.Schedulers
 import java.security.Key
 import java.util.*
 import javax.annotation.PostConstruct
@@ -79,5 +80,7 @@ import javax.crypto.spec.SecretKeySpec
             .parseClaimsJws(token)
             .body
             .subject
-    }.onErrorMap { AuthException(ACCESS_DENIED) }
+    }
+        .onErrorMap { AuthException(ACCESS_DENIED) }
+        .subscribeOn(Schedulers.parallel())
 }

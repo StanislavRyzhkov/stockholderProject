@@ -3,6 +3,7 @@ package company.ryzhkov.sh.controller
 import company.ryzhkov.sh.entity.*
 import company.ryzhkov.sh.security.GeneralUser
 import company.ryzhkov.sh.service.UserService
+import company.ryzhkov.sh.util.Constants.PASSWORD_UPDATED
 import company.ryzhkov.sh.util.Constants.USER_DELETED
 import company.ryzhkov.sh.util.Constants.USER_UPDATED
 import org.springframework.beans.factory.annotation.Autowired
@@ -11,6 +12,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
+import reactor.core.scheduler.Schedulers
 import javax.validation.Valid
 
 @RestController
@@ -54,17 +56,8 @@ class AccountController @Autowired constructor(
     @PreAuthorize(value = "hasRole('USER')")
     fun updatePassword(
         authenticationMono: Mono<Authentication>,
-
-        @Valid
-        @RequestBody
-        updatePasswordMono: Mono<UpdatePassword>
-
-    ): Mono<Message> = authenticationMono
-        .zipWith(updatePasswordMono)
-        .flatMap { tuple ->
-            val userDetails = tuple.t1.principal as UserDetails
-            val updatePassword = tuple.t2
-            userService.updatePassword(userDetails, updatePassword)
-        }
-        .map { Message(it) }
+        @Valid @RequestBody updatePasswordMono: Mono<UpdatePassword>
+    ): Mono<Message> = userService
+        .updatePassword(authenticationMono, updatePasswordMono)
+        .map { Message(PASSWORD_UPDATED) }
 }

@@ -6,10 +6,13 @@ import company.ryzhkov.sh.entity.TextFull
 import company.ryzhkov.sh.entity.TextInfo
 import company.ryzhkov.sh.service.TextService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.ResponseEntity
+import org.springframework.http.server.ServerHttpResponse
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import javax.validation.Valid
@@ -30,7 +33,10 @@ class ArticleController @Autowired constructor(
     @GetMapping(value = ["detail/{englishTitle}"])
     fun getArticleByEnglishTitle(
         @PathVariable(value = "englishTitle") englishTitle: String
-    ): Mono<TextFull> = textService.findFullTextByEnglishTitle(englishTitle)
+    ): Mono<ResponseEntity<TextFull>> = textService
+        .findFullTextByEnglishTitle(englishTitle)
+        .map { ResponseEntity.ok(it) }
+        .defaultIfEmpty(ResponseEntity.notFound().build())
 
     @PostMapping(value = ["reply"])
     @PreAuthorize(value = "hasRole('USER')")

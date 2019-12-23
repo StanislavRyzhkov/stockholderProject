@@ -29,7 +29,8 @@ import javax.annotation.PostConstruct
 
     private val log: org.slf4j.Logger = org.slf4j.LoggerFactory.getLogger(TextService::class.java)
 
-    fun findFullTextByEnglishTitle(englishTitle: String): Mono<TextFull> = findTextByEnglishTitle(englishTitle)
+    fun findFullTextByEnglishTitle(englishTitle: String): Mono<TextFull> = textRepository
+        .findByEnglishTitle(englishTitle)
         .map { TextFull.createInstance(it) }
 
     fun findAllArticles(): Flux<TextInfo> = textRepository
@@ -97,7 +98,7 @@ import javax.annotation.PostConstruct
             .subscribe { log.info("Text {} created", it.title) }
     }
 
-    private fun findTextByEnglishTitle(englishTitle: String): Mono<Text> = textRepository
-        .findByEnglishTitle(englishTitle)
-        .switchIfEmpty(Mono.error(NotFoundException(TEXT_NOT_FOUND)))
+//    private fun findTextByEnglishTitle(englishTitle: String): Mono<Text> = textRepository
+//        .findByEnglishTitle(englishTitle)
+//        .switchIfEmpty(Mono.error(NotFoundException(TEXT_NOT_FOUND)))
 }

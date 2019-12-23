@@ -7,6 +7,7 @@ import io.jsonwebtoken.security.Keys
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.ApplicationArguments
 import org.springframework.stereotype.Service
+import reactor.core.scheduler.Schedulers
 import java.util.*
 import javax.annotation.PostConstruct
 
@@ -25,6 +26,7 @@ import javax.annotation.PostConstruct
             val keyElement = KeyElement(secretString = secretString)
             keyElementRepository
                 .insert(keyElement)
+                .subscribeOn(Schedulers.parallel())
                 .subscribe { log.info("Key element created") }
         }
     }
