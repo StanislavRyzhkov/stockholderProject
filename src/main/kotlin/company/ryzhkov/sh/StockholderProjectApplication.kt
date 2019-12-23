@@ -13,8 +13,7 @@ class StockholderProjectApplication : ApplicationRunner {
 	override fun run(args: ApplicationArguments?) {
 	}
 
-	@Bean
-	fun encoder(): BCryptPasswordEncoder = BCryptPasswordEncoder()
+	@Bean fun encoder(): BCryptPasswordEncoder = BCryptPasswordEncoder()
 }
 
 fun main(args: Array<String>) {
