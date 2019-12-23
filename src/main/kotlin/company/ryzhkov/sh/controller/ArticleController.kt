@@ -4,15 +4,15 @@ import company.ryzhkov.sh.entity.CreateReply
 import company.ryzhkov.sh.entity.Message
 import company.ryzhkov.sh.entity.TextFull
 import company.ryzhkov.sh.entity.TextInfo
+import company.ryzhkov.sh.exception.AuthException
+import company.ryzhkov.sh.exception.NotFoundException
 import company.ryzhkov.sh.service.TextService
+import company.ryzhkov.sh.util.Constants.REPLY_CREATED
+import company.ryzhkov.sh.util.Constants.TEXT_NOT_FOUND
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.ResponseEntity
-import org.springframework.http.server.ServerHttpResponse
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
-import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import javax.validation.Valid
@@ -33,26 +33,17 @@ class ArticleController @Autowired constructor(
     @GetMapping(value = ["detail/{englishTitle}"])
     fun getArticleByEnglishTitle(
         @PathVariable(value = "englishTitle") englishTitle: String
-    ): Mono<ResponseEntity<TextFull>> = textService
+    ): Mono<TextFull> = textService
         .findFullTextByEnglishTitle(englishTitle)
-        .map { ResponseEntity.ok(it) }
-        .defaultIfEmpty(ResponseEntity.notFound().build())
+        .switchIfEmpty(Mono.error(NotFoundException(TEXT_NOT_FOUND)))
 
     @PostMapping(value = ["reply"])
     @PreAuthorize(value = "hasRole('USER')")
     fun createReply(
         authenticationMono: Mono<Authentication>,
-
-        @Valid
-        @RequestBody
-        createReplyMono: Mono<CreateReply>
-
-    ): Mono<Message> = authenticationMono
-        .zipWith(createReplyMono)
-        .flatMap { tuple ->
-            val userDetails = tuple.t1.principal as UserDetails
-            val createReply = tuple.t2
-            textService.createReply(userDetails, createReply)
-        }
-        .map { Message(it) }
+        @Valid @RequestBody createReplyMono: Mono<CreateReply>
+    ): Mono<Message> = textService
+        .createReply(authenticationMono, createReplyMono)
+        .map { Message(REPLY_CREATED) }
+        .switchIfEmpty(Mono.error(AuthException("")))
 }

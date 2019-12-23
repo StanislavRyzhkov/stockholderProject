@@ -1,14 +1,12 @@
 package company.ryzhkov.sh.service
 
 import company.ryzhkov.sh.entity.*
-import company.ryzhkov.sh.exception.NotFoundException
 import company.ryzhkov.sh.repository.TextRepository
-import company.ryzhkov.sh.util.Constants.REPLY_CREATED
-import company.ryzhkov.sh.util.Constants.TEXT_NOT_FOUND
+import company.ryzhkov.sh.util.fix
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.ApplicationArguments
 import org.springframework.data.domain.PageRequest
-import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -44,24 +42,20 @@ import javax.annotation.PostConstruct
         )
         .map { TextInfo.createInstance(it) }
 
-    fun createReply(userDetails: UserDetails, createReply: CreateReply): Mono<String> {
-        val (englishTitle, content) = createReply
-        val textMono = textRepository.findByEnglishTitle(englishTitle)
-        val newReply = Reply(
-            username = userDetails.username,
-            content = content,
-            created = Date()
-        )
-
-        return textMono
-            .flatMap { article ->
+    fun createReply(authMono: Mono<Authentication>, createReplyMono: Mono<CreateReply>): Mono<Text> = Mono
+        .zip(authMono, createReplyMono)
+        .flatMap {
+            val user = it.t1.fix()
+            val (englishTitle, content) = it.t2
+            val textMono = textRepository.findByEnglishTitle(englishTitle)
+            val newReply = Reply(username = user.username, content = content, created = Date())
+            textMono.flatMap { article ->
                 val replies = article.replies
                 replies.add(newReply)
                 val updatedArticle = article.copy(replies = replies)
                 textRepository.save(updatedArticle)
             }
-            .map { REPLY_CREATED }
-    }
+        }
 
     @PostConstruct fun createText() {
         if ("--article" in applicationArguments.sourceArgs) createText("ARTICLE")
@@ -97,8 +91,4 @@ import javax.annotation.PostConstruct
             .subscribeOn(Schedulers.elastic())
             .subscribe { log.info("Text {} created", it.title) }
     }
-
-//    private fun findTextByEnglishTitle(englishTitle: String): Mono<Text> = textRepository
-//        .findByEnglishTitle(englishTitle)
-//        .switchIfEmpty(Mono.error(NotFoundException(TEXT_NOT_FOUND)))
 }

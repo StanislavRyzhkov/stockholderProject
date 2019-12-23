@@ -12,7 +12,6 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
-import reactor.core.scheduler.Schedulers
 import javax.validation.Valid
 
 @RestController
