@@ -7,4 +7,4 @@ import org.springframework.security.core.userdetails.UserDetails
 
 fun UserDetails.fix(): User = (this as GeneralUser).user
 
-fun Authentication.fix(): User = (this as UserDetails).fix()
+fun Authentication.fix(): User = (this.principal as UserDetails).fix()
