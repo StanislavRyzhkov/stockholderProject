@@ -37,12 +37,9 @@ import javax.annotation.PostConstruct
 
     private val log: org.slf4j.Logger = org.slf4j.LoggerFactory.getLogger(UserService::class.java)
 
-    override fun findByUsername(username: String): Mono<UserDetails> =
-        findActiveUserByUsername(username)
-            .map { GeneralUser.createInstance(it) }
-            .onErrorMap(NotFoundException::class.java) {
-                BadCredentialsException(INVALID_USERNAME_OR_PASSWORD)
-            }
+    override fun findByUsername(username: String): Mono<UserDetails> = findActiveUserByUsername(username)
+        .map { GeneralUser.createInstance(it) }
+        .onErrorMap(NotFoundException::class.java) { BadCredentialsException(INVALID_USERNAME_OR_PASSWORD) }
 
     fun register(register: Register): Mono<String> = checkUsernameUnique(register.username)
         .zipWith(checkEmailUnique(register.email))
@@ -137,13 +134,11 @@ import javax.annotation.PostConstruct
         .findByEmail(email)
         .switchIfEmpty(Mono.error(NotFoundException(USER_NOT_FOUND)))
 
-    private fun checkUsernameUnique(username: String): Mono<Boolean> =
-        findAnyUserByUsername(username)
-            .map { false }
-            .onErrorResume(NotFoundException::class.java) { Mono.just(true) }
+    private fun checkUsernameUnique(username: String): Mono<Boolean> = findAnyUserByUsername(username)
+        .map { false }
+        .onErrorResume(NotFoundException::class.java) { Mono.just(true) }
 
-    private fun checkEmailUnique(email: String): Mono<Boolean> =
-        findAnyUserByEmail(email)
-            .map { false }
-            .onErrorResume(NotFoundException::class.java) { Mono.just(true) }
+    private fun checkEmailUnique(email: String): Mono<Boolean> = findAnyUserByEmail(email)
+        .map { false }
+        .onErrorResume(NotFoundException::class.java) { Mono.just(true) }
 }
