@@ -78,7 +78,7 @@ class AccountController @Autowired constructor(
         @Valid
         @RequestBody
         updatePasswordMono: Mono<UpdatePassword>
-
+    
     ): Mono<Message> = authenticationMono
         .zipWith(updatePasswordMono)
         .flatMap { tuple ->
