@@ -6,6 +6,7 @@ import company.ryzhkov.sh.service.UserService
 import company.ryzhkov.sh.util.Constants.PASSWORD_UPDATED
 import company.ryzhkov.sh.util.Constants.USER_DELETED
 import company.ryzhkov.sh.util.Constants.USER_UPDATED
+import company.ryzhkov.sh.util.fix
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
@@ -24,14 +25,12 @@ class AccountController @Autowired constructor(
     @GetMapping(value = ["username"])
     @PreAuthorize(value = "hasRole('USER')")
     fun getUsername(authenticationMono: Mono<Authentication>): Mono<Message> = authenticationMono
-        .map { authentication -> (authentication.principal as UserDetails).username }
-        .map { Message(it) }
+        .map { Message(it.fix().username) }
 
     @GetMapping(value = ["account"])
     @PreAuthorize(value = "hasRole('USER')")
     fun getAccount(authenticationMono: Mono<Authentication>): Mono<Account> = authenticationMono
-        .map { authentication -> (authentication.principal as UserDetails) as GeneralUser }
-        .map { Account.createInstance(it.user) }
+        .map { Account.createInstance(it.fix()) }
 
     @PutMapping(value = ["account"])
     @PreAuthorize(value = "hasRole('USER')")
