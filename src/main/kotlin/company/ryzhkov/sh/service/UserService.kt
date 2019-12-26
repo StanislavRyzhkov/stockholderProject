@@ -18,18 +18,16 @@ import company.ryzhkov.sh.util.Constants.USER_CREATED
 import company.ryzhkov.sh.util.Constants.USER_DELETED
 import company.ryzhkov.sh.util.Constants.USER_NOT_FOUND
 import company.ryzhkov.sh.util.Constants.USER_UPDATED
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.ApplicationArguments
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
-import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import java.util.*
 import javax.annotation.PostConstruct
 
-@Service class UserService @Autowired constructor(
+class UserService (
     private val userRepository: UserRepository,
     private val passwordEncoder: BCryptPasswordEncoder,
     private val applicationArguments: ApplicationArguments
