@@ -3,7 +3,6 @@ package company.ryzhkov.sh.entity
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import company.ryzhkov.sh.util.AccountPhoneNumberMatch
-import company.ryzhkov.sh.util.Constants
 import company.ryzhkov.sh.util.Constants.INVALID_LENGTH
 import company.ryzhkov.sh.util.Constants.INVALID_PHONE_NUMBER_LENGTH
 import company.ryzhkov.sh.util.Constants.INVALID_SECOND_NAME
