@@ -5,6 +5,7 @@ import company.ryzhkov.sh.repository.KeyElementRepository
 import company.ryzhkov.sh.repository.UserRepository
 import company.ryzhkov.sh.routes.AccountRoutes
 import company.ryzhkov.sh.security.CustomReactiveAuthenticationManager
+import company.ryzhkov.sh.security.JwtFilter
 import company.ryzhkov.sh.security.TokenProvider
 import company.ryzhkov.sh.service.UserService
 import org.springframework.context.ApplicationContextInitializer
@@ -40,11 +41,14 @@ val beans = beans {
         tokenProvider.init()
         tokenProvider
     }
+    bean("jwtFilter") {
+        JwtFilter(ref())
+    }
     bean("accountHandler") {
         AccountHandler(ref())
     }
     bean("accountRoutes") {
-        AccountRoutes(ref(), ref())
+        AccountRoutes(ref())
     }
     bean {
         ref<AccountRoutes>().router()

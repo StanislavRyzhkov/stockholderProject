@@ -11,6 +11,16 @@ class AccountHandler(
 ) {
 
     fun username(serverRequest: ServerRequest): Mono<ServerResponse> {
-        return ServerResponse.ok().body(Mono.just(5))
+
+        val x = serverRequest.principal().map { e ->
+            println(e)
+            "HUY"
+        }.switchIfEmpty(Mono.just("GO!"))
+            .doOnNext {
+                println("1")
+                println(it)
+                println("2")
+            }
+        return ServerResponse.ok().body(x)
     }
 }

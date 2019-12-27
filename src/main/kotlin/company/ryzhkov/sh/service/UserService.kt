@@ -105,7 +105,7 @@ class UserService (
             .map { PASSWORD_UPDATED }
     }
 
-    @PostConstruct fun createAdminUser() {
+    fun createAdminUser() {
         if ("--admin" in applicationArguments.sourceArgs) {
             val user = User(
                 username = ADMIN_USERNAME,

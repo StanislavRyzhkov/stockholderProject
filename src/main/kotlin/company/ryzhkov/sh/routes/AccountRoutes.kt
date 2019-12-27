@@ -1,16 +1,14 @@
 package company.ryzhkov.sh.routes
 
 import company.ryzhkov.sh.handler.AccountHandler
-import company.ryzhkov.sh.security.TokenProvider
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import org.springframework.security.core.Authentication
 import org.springframework.web.reactive.function.server.ServerResponse
-import org.springframework.web.reactive.function.server.body
 import org.springframework.web.reactive.function.server.router
-import reactor.core.publisher.Mono
 
 class AccountRoutes(
-    private val accountHandler: AccountHandler,
-    private val tokenProvider: TokenProvider
+    private val accountHandler: AccountHandler
 ) {
 
     fun router() = router {
@@ -20,12 +18,11 @@ class AccountRoutes(
             }
         }
     }.filter { request, next ->
-        println("Filter")
-        tokenProvider
-            .getAuthentication(request)
+        request.principal()
             .flatMap {
-                if (it.isAuthenticated) {next.handle(request)}
-                else ServerResponse.badRequest().body(Mono.just(1))
+                val authentication = it as Authentication
+                if (authentication.isAuthenticated) next.handle(request)
+                else ServerResponse.status(HttpStatus.UNAUTHORIZED).build()
             }
     }
 }
