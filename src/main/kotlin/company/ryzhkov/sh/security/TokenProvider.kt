@@ -10,7 +10,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService
 import org.springframework.security.core.userdetails.UserDetails
-import org.springframework.web.reactive.function.server.ServerRequest
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 import java.security.Key
@@ -59,7 +58,7 @@ class TokenProvider(
             .compact()
     }
 
-    fun getUsername(request: ServerHttpRequest): Mono<String> = Mono
+    private fun getUsername(request: ServerHttpRequest): Mono<String> = Mono
         .fromCallable {
             val list = request.headers["Authorization"]
             if (list == null || list.isEmpty()) {

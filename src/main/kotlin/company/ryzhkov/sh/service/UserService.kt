@@ -25,7 +25,6 @@ import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import reactor.core.publisher.Mono
 import java.util.*
-import javax.annotation.PostConstruct
 
 class UserService (
     private val userRepository: UserRepository,

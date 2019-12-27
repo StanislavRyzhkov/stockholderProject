@@ -1,6 +1,9 @@
 package company.ryzhkov.sh.handler
 
+import company.ryzhkov.sh.entity.toAccount
 import company.ryzhkov.sh.service.UserService
+import company.ryzhkov.sh.util.toMessage
+import company.ryzhkov.sh.util.toUser
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.body
@@ -10,17 +13,21 @@ class AccountHandler(
     private val userService: UserService
 ) {
 
-    fun username(serverRequest: ServerRequest): Mono<ServerResponse> {
+    fun username(serverRequest: ServerRequest): Mono<ServerResponse> =
+        ServerResponse
+            .ok()
+            .body(
+                serverRequest
+                    .principal()
+                    .map { it.toUser().username.toMessage() }
+            )
 
-        val x = serverRequest.principal().map { e ->
-            println(e)
-            "HUY"
-        }.switchIfEmpty(Mono.just("GO!"))
-            .doOnNext {
-                println("1")
-                println(it)
-                println("2")
-            }
-        return ServerResponse.ok().body(x)
-    }
+    fun account(serverRequest: ServerRequest): Mono<ServerResponse> =
+        ServerResponse
+            .ok()
+            .body(
+                serverRequest
+                    .principal()
+                    .map { it.toUser().toAccount() }
+            )
 }

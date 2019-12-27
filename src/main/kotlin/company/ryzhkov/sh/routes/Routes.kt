@@ -1,20 +1,34 @@
 package company.ryzhkov.sh.routes
 
 import company.ryzhkov.sh.handler.AccountHandler
+import company.ryzhkov.sh.handler.RegistrationHandler
+import company.ryzhkov.sh.util.Constants.ACCESS_DENIED
+import company.ryzhkov.sh.util.toMonoMessage
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.security.core.Authentication
 import org.springframework.web.reactive.function.server.ServerResponse
+import org.springframework.web.reactive.function.server.body
 import org.springframework.web.reactive.function.server.router
 
-class AccountRoutes(
+class Routes(
+    private val registrationHandler: RegistrationHandler,
     private val accountHandler: AccountHandler
 ) {
 
-    fun router() = router {
+    fun registrationRouter() = router {
+        "/api/register".nest {
+            accept(MediaType.APPLICATION_JSON).nest {
+                POST("/", registrationHandler::register)
+            }
+        }
+    }
+
+    fun userAreaRouter() = router {
         "/api/user_area".nest {
             accept(MediaType.APPLICATION_JSON).nest {
                 GET("/username", accountHandler::username)
+                GET("/account", accountHandler::account)
             }
         }
     }.filter { request, next ->
@@ -22,7 +36,9 @@ class AccountRoutes(
             .flatMap {
                 val authentication = it as Authentication
                 if (authentication.isAuthenticated) next.handle(request)
-                else ServerResponse.status(HttpStatus.UNAUTHORIZED).build()
+                else ServerResponse
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(ACCESS_DENIED.toMonoMessage())
             }
     }
 }

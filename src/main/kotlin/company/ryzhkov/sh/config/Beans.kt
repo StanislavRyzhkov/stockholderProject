@@ -1,9 +1,10 @@
 package company.ryzhkov.sh.config
 
 import company.ryzhkov.sh.handler.AccountHandler
+import company.ryzhkov.sh.handler.RegistrationHandler
 import company.ryzhkov.sh.repository.KeyElementRepository
 import company.ryzhkov.sh.repository.UserRepository
-import company.ryzhkov.sh.routes.AccountRoutes
+import company.ryzhkov.sh.routes.Routes
 import company.ryzhkov.sh.security.CustomReactiveAuthenticationManager
 import company.ryzhkov.sh.security.JwtFilter
 import company.ryzhkov.sh.security.TokenProvider
@@ -11,7 +12,6 @@ import company.ryzhkov.sh.service.UserService
 import org.springframework.context.ApplicationContextInitializer
 import org.springframework.context.support.GenericApplicationContext
 import org.springframework.context.support.beans
-
 
 val beans = beans {
     bean<SecurityConfig>("securityConfig")
@@ -47,11 +47,17 @@ val beans = beans {
     bean("accountHandler") {
         AccountHandler(ref())
     }
-    bean("accountRoutes") {
-        AccountRoutes(ref())
+    bean("registrationHandler") {
+        RegistrationHandler(ref())
     }
-    bean {
-        ref<AccountRoutes>().router()
+    bean("Routes") {
+        Routes(ref(), ref())
+    }
+    bean("userAreaRouter") {
+        ref<Routes>().userAreaRouter()
+    }
+    bean("registrationRouter") {
+        ref<Routes>().registrationRouter()
     }
 }
 
