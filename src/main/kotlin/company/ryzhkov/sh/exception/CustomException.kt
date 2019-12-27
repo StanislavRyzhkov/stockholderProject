@@ -1,6 +1,11 @@
 package company.ryzhkov.sh.exception
 
-sealed class CustomException(override val message: String) : RuntimeException()
+import company.ryzhkov.sh.entity.Message
+import company.ryzhkov.sh.util.toMessage
+
+sealed class CustomException(override val message: String) : RuntimeException() {
+    fun toMessage(): Message = this.message.toMessage()
+}
 
 data class NotFoundException(
     override val message: String,

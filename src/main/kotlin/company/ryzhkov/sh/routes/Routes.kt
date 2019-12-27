@@ -3,12 +3,11 @@ package company.ryzhkov.sh.routes
 import company.ryzhkov.sh.handler.AccountHandler
 import company.ryzhkov.sh.handler.RegistrationHandler
 import company.ryzhkov.sh.util.Constants.ACCESS_DENIED
-import company.ryzhkov.sh.util.toMonoMessage
+import company.ryzhkov.sh.util.toMessage
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.security.core.Authentication
 import org.springframework.web.reactive.function.server.ServerResponse
-import org.springframework.web.reactive.function.server.body
 import org.springframework.web.reactive.function.server.router
 
 class Routes(
@@ -29,6 +28,7 @@ class Routes(
             accept(MediaType.APPLICATION_JSON).nest {
                 GET("/username", accountHandler::username)
                 GET("/account", accountHandler::account)
+                PUT("/account", accountHandler::updateAccount)
             }
         }
     }.filter { request, next ->
@@ -38,7 +38,8 @@ class Routes(
                 if (authentication.isAuthenticated) next.handle(request)
                 else ServerResponse
                     .status(HttpStatus.UNAUTHORIZED)
-                    .body(ACCESS_DENIED.toMonoMessage())
+//                    .body(ACCESS_DENIED.toMonoMessage())
+                    .bodyValue(ACCESS_DENIED.toMessage())
             }
     }
 }

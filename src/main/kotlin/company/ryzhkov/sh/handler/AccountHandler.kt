@@ -6,6 +6,7 @@ import company.ryzhkov.sh.util.toMessage
 import company.ryzhkov.sh.util.toUser
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
+import org.springframework.web.reactive.function.server.ServerResponse.ok
 import org.springframework.web.reactive.function.server.body
 import reactor.core.publisher.Mono
 
@@ -14,20 +15,19 @@ class AccountHandler(
 ) {
 
     fun username(serverRequest: ServerRequest): Mono<ServerResponse> =
-        ServerResponse
-            .ok()
-            .body(
-                serverRequest
-                    .principal()
-                    .map { it.toUser().username.toMessage() }
-            )
+        ok().body(
+            serverRequest
+                .principal()
+                .map { it.toUser().username.toMessage() }
+        )
 
     fun account(serverRequest: ServerRequest): Mono<ServerResponse> =
-        ServerResponse
-            .ok()
-            .body(
-                serverRequest
-                    .principal()
-                    .map { it.toUser().toAccount() }
-            )
+        ok().body(
+            serverRequest
+                .principal()
+                .map { it.toUser().toAccount() }
+        )
+
+    fun updateAccount(serverRequest: ServerRequest): Mono<ServerResponse> =
+        TODO()
 }
