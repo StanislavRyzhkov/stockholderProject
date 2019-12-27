@@ -16,33 +16,33 @@ import reactor.core.publisher.Mono
 
 @RestController @ControllerAdvice class CommonExceptionHandler {
 
-    @ResponseStatus(UNAUTHORIZED)
-    @ExceptionHandler(AccessDeniedException::class)
-    fun handleInvalidAuth(e: AccessDeniedException): Mono<Message> =
-        Mono.just(Message.accessDenied())
-
-    @ResponseStatus(UNAUTHORIZED)
-    @ExceptionHandler(AuthException::class)
-    fun handleInvalidAuth(e: AuthException): Mono<Message> =
-        Mono.just(Message(e.message))
-
-    @ResponseStatus(BAD_REQUEST)
-    @ExceptionHandler(WebExchangeBindException::class)
-    fun handleInvalidInput(e: WebExchangeBindException): Mono<Message> =
-        Mono.just(Message.validationExcMessage(e))
-
-    @ResponseStatus(BAD_REQUEST)
-    @ExceptionHandler(BadCredentialsException::class)
-    fun handleInvalidAuth(e: BadCredentialsException): Mono<Message> =
-        Mono.just(Message(e.message))
-
-    @ResponseStatus(BAD_REQUEST)
-    @ExceptionHandler(AlreadyExistsException::class)
-    fun handleInvalidAuth(e: AlreadyExistsException): Mono<Message> =
-        Mono.just(Message(e.message))
-
-    @ResponseStatus(NOT_FOUND)
-    @ExceptionHandler(NotFoundException::class)
-    fun handleInvalidAuth(e: NotFoundException): Mono<Message> =
-        Mono.just(Message(e.message))
+//    @ResponseStatus(UNAUTHORIZED)
+//    @ExceptionHandler(AccessDeniedException::class)
+//    fun handleInvalidAuth(e: AccessDeniedException): Mono<Message> =
+//        Mono.just(Message.accessDenied())
+//
+//    @ResponseStatus(UNAUTHORIZED)
+//    @ExceptionHandler(AuthException::class)
+//    fun handleInvalidAuth(e: AuthException): Mono<Message> =
+//        Mono.just(Message(e.message))
+//
+//    @ResponseStatus(BAD_REQUEST)
+//    @ExceptionHandler(WebExchangeBindException::class)
+//    fun handleInvalidInput(e: WebExchangeBindException): Mono<Message> =
+//        Mono.just(Message.validationExcMessage(e))
+//
+//    @ResponseStatus(BAD_REQUEST)
+//    @ExceptionHandler(BadCredentialsException::class)
+//    fun handleInvalidAuth(e: BadCredentialsException): Mono<Message> =
+//        Mono.just(Message(e.message))
+//
+//    @ResponseStatus(BAD_REQUEST)
+//    @ExceptionHandler(AlreadyExistsException::class)
+//    fun handleInvalidAuth(e: AlreadyExistsException): Mono<Message> =
+//        Mono.just(Message(e.message))
+//
+//    @ResponseStatus(NOT_FOUND)
+//    @ExceptionHandler(NotFoundException::class)
+//    fun handleInvalidAuth(e: NotFoundException): Mono<Message> =
+//        Mono.just(Message(e.message))
 }

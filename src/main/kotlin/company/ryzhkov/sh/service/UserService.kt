@@ -12,12 +12,8 @@ import company.ryzhkov.sh.util.Constants.ADMIN_PASSWORD
 import company.ryzhkov.sh.util.Constants.ADMIN_USERNAME
 import company.ryzhkov.sh.util.Constants.EMAIL_ALREADY_EXISTS
 import company.ryzhkov.sh.util.Constants.INVALID_USERNAME_OR_PASSWORD
-import company.ryzhkov.sh.util.Constants.PASSWORD_UPDATED
 import company.ryzhkov.sh.util.Constants.USER_ALREADY_EXISTS
-import company.ryzhkov.sh.util.Constants.USER_CREATED
-import company.ryzhkov.sh.util.Constants.USER_DELETED
 import company.ryzhkov.sh.util.Constants.USER_NOT_FOUND
-import company.ryzhkov.sh.util.Constants.USER_UPDATED
 import org.springframework.boot.ApplicationArguments
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService
@@ -38,81 +34,63 @@ class UserService (
         .map { GeneralUser.createInstance(it) }
         .onErrorMap(NotFoundException::class.java) { BadCredentialsException(INVALID_USERNAME_OR_PASSWORD) }
 
-    fun register(register: Register): Mono<String> = checkUsernameUnique(register.username)
+    fun register(register: Register): Mono<User> = checkUsernameUnique(register.username)
         .zipWith(checkEmailUnique(register.email))
         .flatMap { tuple ->
             if (!tuple.t1) throw AlreadyExistsException(USER_ALREADY_EXISTS)
             if (!tuple.t2) throw AlreadyExistsException(EMAIL_ALREADY_EXISTS)
             val passwordHash = passwordEncoder.encode(register.password1)
             userRepository.save(User(
-                username = register.username,
-                email = register.email,
-                password = passwordHash,
-                roles = Collections.singletonList("ROLE_USER")
+                username =  register.username,
+                email =     register.email,
+                password =  passwordHash,
+                roles =     Collections.singletonList("ROLE_USER")
             ))
         }
-        .doOnNext { user -> log.info("{} created", user.toString()) }
-        .map { USER_CREATED }
 
-    fun updateAccount(userDetails: UserDetails, updateAccount: UpdateAccount): Mono<String> {
+    fun updateAccount(userDetails: UserDetails, updateAccount: UpdateAccount): Mono<User> {
         val user = (userDetails as GeneralUser).user
         val (firstName, secondName, phoneNumber) = updateAccount
         val updatedUser = user.copy(
-            firstName = firstName,
-            secondName = secondName,
-            phoneNumber = phoneNumber
+            firstName =     firstName,
+            secondName =    secondName,
+            phoneNumber =   phoneNumber
         )
-        return userRepository
-            .save(updatedUser)
-            .doOnNext { log.info("{} updated", it.toString()) }
-            .map { USER_UPDATED }
+        return userRepository.save(updatedUser)
     }
 
-    fun deleteAccount(userDetails: UserDetails, deleteAccount: DeleteAccount): Mono<String> {
+    fun deleteAccount(userDetails: UserDetails, deleteAccount: DeleteAccount): Mono<User> {
         val (username, password1, _) = deleteAccount
-
         if (username != userDetails.username) {
             throw AuthException(ACCESS_DENIED)
         }
-
         if (!passwordEncoder.matches(password1, userDetails.password)) {
             throw AuthException(INVALID_USERNAME_OR_PASSWORD)
         }
-
         val user = (userDetails as GeneralUser).user
         val deletedUser = user.copy(status = "DELETED")
 
-        return userRepository
-            .save(deletedUser)
-            .doOnNext { log.info("{} deleted", it.toString()) }
-            .map { USER_DELETED }
+        return userRepository.save(deletedUser)
     }
 
-    fun updatePassword(userDetails: UserDetails, updatePassword: UpdatePassword): Mono<String> {
+    fun updatePassword(userDetails: UserDetails, updatePassword: UpdatePassword): Mono<User> {
         val (oldPassword, newPassword1, _) = updatePassword
-
         if (!passwordEncoder.matches(oldPassword, userDetails.password)) {
             throw AuthException(INVALID_USERNAME_OR_PASSWORD)
         }
-
         val user = (userDetails as GeneralUser).user
         val userWithUpdatedPassword = user.copy(password = passwordEncoder.encode(newPassword1))
-
-        return userRepository
-            .save(userWithUpdatedPassword)
-            .doOnNext { log.info("{} password updated", it.toString()) }
-            .map { PASSWORD_UPDATED }
+        return userRepository.save(userWithUpdatedPassword)
     }
 
     fun createAdminUser() {
         if ("--admin" in applicationArguments.sourceArgs) {
             val user = User(
-                username = ADMIN_USERNAME,
-                email = ADMIN_EMAIL,
-                password = passwordEncoder.encode(ADMIN_PASSWORD),
-                roles = listOf("ROLE_ADMIN", "ROLE_USER")
+                username =  ADMIN_USERNAME,
+                email =     ADMIN_EMAIL,
+                password =  passwordEncoder.encode(ADMIN_PASSWORD),
+                roles =     listOf("ROLE_ADMIN", "ROLE_USER")
             )
-
             userRepository
                 .insert(user)
                 .subscribe { log.info("Admin {} successfully created", it.username) }

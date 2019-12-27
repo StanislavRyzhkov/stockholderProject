@@ -2,8 +2,8 @@ package company.ryzhkov.sh.entity
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
-import company.ryzhkov.sh.util.Constants.INVALID_EMAIL
 import company.ryzhkov.sh.util.Constants.INVALID_LENGTH
+import company.ryzhkov.sh.util.EmailConstants.INVALID_EMAIL
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import org.springframework.format.annotation.DateTimeFormat

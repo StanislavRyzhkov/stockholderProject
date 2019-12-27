@@ -11,10 +11,12 @@ import javax.validation.Valid
 @RestController
 @CrossOrigin(origins = ["*"])
 @RequestMapping("/api/register")
-class RegistrationController @Autowired constructor(private val userService: UserService) {
+class RegistrationController @Autowired constructor(
+//    private val userService: UserService
+) {
 
-    @PostMapping fun register(@Valid @RequestBody registerMono: Mono<Register>): Mono<Message> =
-        registerMono
-            .flatMap { userService.register(it) }
-            .map { Message(it) }
+//    @PostMapping fun register(@Valid @RequestBody registerMono: Mono<Register>): Mono<Message> =
+//        registerMono
+//            .flatMap { userService.register(it) }
+//            .map { Message(it) }
 }
