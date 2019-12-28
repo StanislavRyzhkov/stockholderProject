@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import company.ryzhkov.sh.util.*
 import company.ryzhkov.sh.util.Constants.INVALID_LENGTH
-import company.ryzhkov.sh.util.Constants.INVALID_PHONE_NUMBER_LENGTH
-import company.ryzhkov.sh.util.Constants.INVALID_SECOND_NAME
 import company.ryzhkov.sh.util.Constants.PASSWORD_FIELD_IS_EMPTY
 import company.ryzhkov.sh.util.EmailConstants.EMAIL_FIELD_IS_EMPTY
 import company.ryzhkov.sh.util.EmailConstants.EMAIL_FIELD_TOO_LONG
@@ -21,10 +19,8 @@ import company.ryzhkov.sh.util.UsernameConstants.USERNAME_TOO_LONG
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import org.springframework.format.annotation.DateTimeFormat
-import java.io.Serializable
 import java.util.*
 import javax.validation.constraints.NotBlank
-import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
 @Document(collection = "users")
@@ -42,18 +38,6 @@ data class User(
     val created: Date = Date()
 )
 
-fun Register.validate(): Register =
-    Validator(this)
-        .check(USERNAME_TOO_LONG) { it.username.length < 64 }
-        .check(USERNAME_FIELD_IS_EMPTY) { it.username.isNotEmpty() }
-        .check(EMAIL_FIELD_TOO_LONG) { it.email.length < 64 }
-        .check(EMAIL_FIELD_IS_EMPTY) { it.email.isNotEmpty() }
-        .check(INVALID_EMAIL) { it.email.validateAsEmail() }
-        .check(PASSWORDS_DO_NOT_MATCH) { it.password1 == it.password2 }
-        .check(PASSWORD_TOO_LONG) { it.password1.length < 64 }
-        .check(PASSWORD_TOO_SHORT) { it.password1.length > 4 }
-        .create()
-
 data class Register @JsonCreator constructor(
     @param:JsonProperty("username")
     val username: String,
@@ -67,6 +51,18 @@ data class Register @JsonCreator constructor(
     @param:JsonProperty("password2")
     val password2: String
 )
+
+fun Register.validate(): Register =
+    Validator(this)
+        .check(USERNAME_TOO_LONG) { it.username.length < 64 }
+        .check(USERNAME_FIELD_IS_EMPTY) { it.username.isNotEmpty() }
+        .check(EMAIL_FIELD_TOO_LONG) { it.email.length < 64 }
+        .check(EMAIL_FIELD_IS_EMPTY) { it.email.isNotEmpty() }
+        .check(INVALID_EMAIL) { it.email.validateAsEmail() }
+        .check(PASSWORDS_DO_NOT_MATCH) { it.password1 == it.password2 }
+        .check(PASSWORD_TOO_LONG) { it.password1.length < 64 }
+        .check(PASSWORD_TOO_SHORT) { it.password1.length > 4 }
+        .create()
 
 data class Auth @JsonCreator constructor(
     @param:JsonProperty("username")
@@ -113,22 +109,27 @@ data class UpdateAccountWithUser(
     val user: User
 )
 
-@PasswordRepeatMatch(first = "password1", second = "password2")
 data class DeleteAccount @JsonCreator constructor(
     @param:JsonProperty("username")
-    @field:NotBlank(message = USERNAME_FIELD_IS_EMPTY)
-    @field:Size(max = 64, message = USERNAME_TOO_LONG)
     val username: String,
 
     @param:JsonProperty("password1")
-    @field:NotBlank(message = PASSWORD_FIELD_IS_EMPTY)
-    @field:Size(min = 5, max = 64, message = INVALID_LENGTH)
     val password1: String,
 
     @param:JsonProperty("password2")
-    @field:NotBlank(message = PASSWORD_FIELD_IS_EMPTY)
-    @field:Size(min = 5, max = 64, message = INVALID_LENGTH)
     val password2: String
+)
+
+fun DeleteAccount.validate(): DeleteAccount =
+    Validator(this)
+        .check(PASSWORDS_DO_NOT_MATCH) { it.password1 == it.password2 }
+        .create()
+
+data class DeleteAccountWithUser(
+    val username: String,
+    val password1: String,
+    val password2: String,
+    val user: User
 )
 
 @PasswordRepeatMatch(first = "newPassword1", second = "newPassword2")

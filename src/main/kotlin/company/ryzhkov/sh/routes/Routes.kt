@@ -29,6 +29,7 @@ class Routes(
                 GET("/username", accountHandler::username)
                 GET("/account", accountHandler::account)
                 PUT("/account", accountHandler::updateAccount)
+                DELETE("/account", accountHandler::deleteAccount)
             }
         }
     }.filter { request, next ->
@@ -38,7 +39,6 @@ class Routes(
                 if (authentication.isAuthenticated) next.handle(request)
                 else ServerResponse
                     .status(HttpStatus.UNAUTHORIZED)
-//                    .body(ACCESS_DENIED.toMonoMessage())
                     .bodyValue(ACCESS_DENIED.toMessage())
             }
     }

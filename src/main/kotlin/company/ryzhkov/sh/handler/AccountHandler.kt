@@ -1,6 +1,7 @@
 package company.ryzhkov.sh.handler
 
 import company.ryzhkov.sh.entity.UpdateAccount
+import company.ryzhkov.sh.entity.User
 import company.ryzhkov.sh.entity.validate
 import company.ryzhkov.sh.exception.CustomException
 import company.ryzhkov.sh.service.UserService
@@ -33,20 +34,23 @@ class AccountHandler(
                 .map { it.toUser().toAccount() }
         )
 
-    // Это не будет наботать! ServerRequest!!!
     fun updateAccount(serverRequest: ServerRequest): Mono<ServerResponse> =
-        serverRequest
-            .principal()
-            .map { it.toUser() }
-            .zipWith(
+        Mono
+            .zip(
+                requestToUser(serverRequest),
                 serverRequest
                     .bodyToMono(UpdateAccount::class.java)
                     .map { it.validate() }
             )
             .map { it.t2 + it.t1 }
-            .flatMap { userService.updateAccount(it) }
+            .map { userService.updateAccount(it) }
             .flatMap { ok().bodyValue(USER_UPDATED.toMessage()) }
             .onErrorResume (CustomException::class.java) {
                 ServerResponse.badRequest().bodyValue(it.message.toMessage())
             }
+
+    fun deleteAccount(serverRequest: ServerRequest): Mono<ServerResponse> = TODO()
+
+    private fun requestToUser(serverRequest: ServerRequest): Mono<User> =
+        serverRequest.principal().map { it.toUser() }
 }

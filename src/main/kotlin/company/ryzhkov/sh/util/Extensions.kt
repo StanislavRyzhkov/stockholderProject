@@ -47,7 +47,7 @@ operator fun UpdateAccount.plus(user: User): UpdateAccountWithUser {
     return UpdateAccountWithUser(firstName, secondName, phoneNumber, user)
 }
 
-operator fun Mono<UpdateAccount>.plus(user: Mono<User>): Mono<UpdateAccountWithUser> {
-    return Mono.zip(this, user)
-        .map { it.t1 + it.t2 }
+operator fun DeleteAccount.plus(user: User): DeleteAccountWithUser {
+    val (username, password1, password2) = this
+    return DeleteAccountWithUser(username, password1, password2, user)
 }
