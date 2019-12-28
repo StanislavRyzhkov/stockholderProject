@@ -23,6 +23,18 @@ object UserConstants {
     const val USER_DELETED = "Пользователь удален"
 }
 
+object FirstNameConstants {
+    const val FIRST_NAME_TOO_LONG = "Имя не должно быть более 100 символов"
+}
+
+object SecondNameConstants {
+    const val SECOND_NAME_TOO_LONG = "Фамилия не должна быть более 100 символов"
+}
+
+object PhoneNumberConstants {
+    const val INVALID_PHONE_NUMBER_FORMAT = "Некорректный формат номера телефона"
+}
+
 object Constants {
 
     const val USER_NOT_FOUND = "Пользователь не найден"
@@ -33,26 +45,11 @@ object Constants {
 
     const val EMAIL_ALREADY_EXISTS = "Пользователь с таким email существует"
 
-
-
     const val PASSWORD_UPDATED = "Пароль изменен"
-
-
 
     const val INVALID_USERNAME_OR_PASSWORD = "Неправильное имя пользователя или пароль"
 
-
-
     const val PASSWORD_FIELD_IS_EMPTY = "Не заполнено поле \"Пароль\""
-
-
-
-
-
-
-
-
-
 
     const val ACCESS_DENIED = "Доступ запрещен"
 
@@ -65,8 +62,6 @@ object Constants {
     const val INVALID_SECOND_NAME = "Некорректная длина фамилии"
 
     const val INVALID_PHONE_NUMBER_LENGTH = "Некорректная длина номера телефона"
-
-    const val INVALID_PHONE_NUMBER_FORMAT = "Некорректный формат номера телефона"
 
     const val INVALID_LENGTH = "Некорректная длина поля"
 

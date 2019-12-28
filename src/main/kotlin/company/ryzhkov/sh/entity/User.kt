@@ -2,7 +2,7 @@ package company.ryzhkov.sh.entity
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
-import company.ryzhkov.sh.util.AccountPhoneNumberMatch
+import company.ryzhkov.sh.util.*
 import company.ryzhkov.sh.util.Constants.INVALID_LENGTH
 import company.ryzhkov.sh.util.Constants.INVALID_PHONE_NUMBER_LENGTH
 import company.ryzhkov.sh.util.Constants.INVALID_SECOND_NAME
@@ -10,14 +10,14 @@ import company.ryzhkov.sh.util.Constants.PASSWORD_FIELD_IS_EMPTY
 import company.ryzhkov.sh.util.EmailConstants.EMAIL_FIELD_IS_EMPTY
 import company.ryzhkov.sh.util.EmailConstants.EMAIL_FIELD_TOO_LONG
 import company.ryzhkov.sh.util.EmailConstants.INVALID_EMAIL
+import company.ryzhkov.sh.util.FirstNameConstants.FIRST_NAME_TOO_LONG
 import company.ryzhkov.sh.util.PasswordConstants.PASSWORDS_DO_NOT_MATCH
 import company.ryzhkov.sh.util.PasswordConstants.PASSWORD_TOO_LONG
 import company.ryzhkov.sh.util.PasswordConstants.PASSWORD_TOO_SHORT
-import company.ryzhkov.sh.util.PasswordRepeatMatch
+import company.ryzhkov.sh.util.PhoneNumberConstants.INVALID_PHONE_NUMBER_FORMAT
+import company.ryzhkov.sh.util.SecondNameConstants.SECOND_NAME_TOO_LONG
 import company.ryzhkov.sh.util.UsernameConstants.USERNAME_FIELD_IS_EMPTY
 import company.ryzhkov.sh.util.UsernameConstants.USERNAME_TOO_LONG
-import company.ryzhkov.sh.util.Validator
-import company.ryzhkov.sh.util.validateAsEmail
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import org.springframework.format.annotation.DateTimeFormat
@@ -42,14 +42,6 @@ data class User(
     val created: Date = Date()
 )
 
-fun User.toAccount() = Account(
-    this.username,
-    this.email,
-    this.firstName,
-    this.secondName,
-    this.phoneNumber
-)
-
 fun Register.validate(): Register =
     Validator(this)
         .check(USERNAME_TOO_LONG) { it.username.length < 64 }
@@ -65,17 +57,16 @@ fun Register.validate(): Register =
 data class Register @JsonCreator constructor(
     @param:JsonProperty("username")
     val username: String,
+
     @param:JsonProperty("email")
     val email: String,
+
     @param:JsonProperty("password1")
     val password1: String,
+
     @param:JsonProperty("password2")
     val password2: String
-) {
-
-    override fun toString(): String =
-        "Register ($username, $email, $password1, $password2)"
-}
+)
 
 data class Auth @JsonCreator constructor(
     @param:JsonProperty("username")
@@ -95,35 +86,31 @@ data class Account constructor(
     val firstName: String,
     val secondName: String,
     val phoneNumber: String
-) : Serializable {
+)
 
-    companion object {
-        fun createInstance(user: User): Account = Account(
-            user.username,
-            user.email,
-            user.firstName,
-            user.secondName,
-            user.phoneNumber
-        )
-    }
-}
+fun UpdateAccount.validate(): UpdateAccount =
+    Validator(this)
+        .check(FIRST_NAME_TOO_LONG) { it.firstName.validateMaxLength(100) }
+        .check(SECOND_NAME_TOO_LONG) { it.secondName.length < 100 }
+        .check(INVALID_PHONE_NUMBER_FORMAT) { it.phoneNumber.validateAsPhoneNumber() }
+        .create()
 
-@AccountPhoneNumberMatch(fieldName = "phoneNumber")
 data class UpdateAccount @JsonCreator constructor(
     @param:JsonProperty("firstName")
-    @field:NotNull
-    @field:Size(max = 120, message = "")
     val firstName: String,
 
     @param:JsonProperty("secondName")
-    @field:NotNull
-    @field:Size(max = 120, message = INVALID_SECOND_NAME)
     val secondName: String,
 
     @param:JsonProperty("phoneNumber")
-    @field:NotNull
-    @field:Size(max = 120, message = INVALID_PHONE_NUMBER_LENGTH)
     val phoneNumber: String
+)
+
+data class UpdateAccountWithUser(
+    val firstName: String,
+    val secondName: String,
+    val phoneNumber: String,
+    val user: User
 )
 
 @PasswordRepeatMatch(first = "password1", second = "password2")
