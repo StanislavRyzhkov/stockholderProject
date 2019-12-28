@@ -48,9 +48,8 @@ class UserService (
             ))
         }
 
-    fun updateAccount(userDetails: UserDetails, updateAccount: UpdateAccount): Mono<User> {
-        val user = (userDetails as GeneralUser).user
-        val (firstName, secondName, phoneNumber) = updateAccount
+    fun updateAccount(updateAccountWithUser: UpdateAccountWithUser): Mono<User> {
+        val (firstName, secondName, phoneNumber, user) = updateAccountWithUser
         val updatedUser = user.copy(
             firstName =     firstName,
             secondName =    secondName,
