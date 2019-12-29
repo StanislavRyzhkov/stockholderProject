@@ -1,15 +1,13 @@
 package company.ryzhkov.sh.handler
 
+import company.ryzhkov.sh.entity.DeleteAccount
 import company.ryzhkov.sh.entity.UpdateAccount
-import company.ryzhkov.sh.entity.User
 import company.ryzhkov.sh.entity.validate
 import company.ryzhkov.sh.exception.CustomException
 import company.ryzhkov.sh.service.UserService
+import company.ryzhkov.sh.util.*
+import company.ryzhkov.sh.util.UserConstants.USER_DELETED
 import company.ryzhkov.sh.util.UserConstants.USER_UPDATED
-import company.ryzhkov.sh.util.plus
-import company.ryzhkov.sh.util.toAccount
-import company.ryzhkov.sh.util.toMessage
-import company.ryzhkov.sh.util.toUser
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.ServerResponse.ok
@@ -37,7 +35,7 @@ class AccountHandler(
     fun updateAccount(serverRequest: ServerRequest): Mono<ServerResponse> =
         Mono
             .zip(
-                requestToUser(serverRequest),
+                serverRequest.toMonoUser(),
                 serverRequest
                     .bodyToMono(UpdateAccount::class.java)
                     .map { it.validate() }
@@ -49,8 +47,20 @@ class AccountHandler(
                 ServerResponse.badRequest().bodyValue(it.message.toMessage())
             }
 
-    fun deleteAccount(serverRequest: ServerRequest): Mono<ServerResponse> = TODO()
+    fun deleteAccount(serverRequest: ServerRequest): Mono<ServerResponse> =
+        Mono
+            .zip(
+                serverRequest.toMonoUser(),
+                serverRequest
+                    .bodyToMono(DeleteAccount::class.java)
+                    .map { it.validate() }
+            )
+            .map { it.t2 + it.t1 }
+            .map { userService.deleteAccount(it) }
+            .flatMap { ok().bodyValue(USER_DELETED.toMessage()) }
+            .onErrorResume (CustomException::class.java) {
+                ServerResponse.badRequest().bodyValue(it.message.toMessage())
+            }
 
-    private fun requestToUser(serverRequest: ServerRequest): Mono<User> =
-        serverRequest.principal().map { it.toUser() }
+    fun updatePassword(serverRequest: ServerRequest): Mono<ServerResponse> = TODO()
 }

@@ -3,7 +3,6 @@ package company.ryzhkov.sh.entity
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import company.ryzhkov.sh.util.*
-import company.ryzhkov.sh.util.Constants.INVALID_LENGTH
 import company.ryzhkov.sh.util.Constants.PASSWORD_FIELD_IS_EMPTY
 import company.ryzhkov.sh.util.EmailConstants.EMAIL_FIELD_IS_EMPTY
 import company.ryzhkov.sh.util.EmailConstants.EMAIL_FIELD_TOO_LONG
@@ -41,27 +40,24 @@ data class User(
 data class Register @JsonCreator constructor(
     @param:JsonProperty("username")
     val username: String,
-
     @param:JsonProperty("email")
     val email: String,
-
     @param:JsonProperty("password1")
     val password1: String,
-
     @param:JsonProperty("password2")
     val password2: String
 )
 
 fun Register.validate(): Register =
     Validator(this)
-        .check(USERNAME_TOO_LONG) { it.username.length < 64 }
+        .check(USERNAME_TOO_LONG) { it.username.validateMaxLength(100) }
         .check(USERNAME_FIELD_IS_EMPTY) { it.username.isNotEmpty() }
-        .check(EMAIL_FIELD_TOO_LONG) { it.email.length < 64 }
+        .check(EMAIL_FIELD_TOO_LONG) { it.email.validateMaxLength(100) }
         .check(EMAIL_FIELD_IS_EMPTY) { it.email.isNotEmpty() }
         .check(INVALID_EMAIL) { it.email.validateAsEmail() }
         .check(PASSWORDS_DO_NOT_MATCH) { it.password1 == it.password2 }
-        .check(PASSWORD_TOO_LONG) { it.password1.length < 64 }
-        .check(PASSWORD_TOO_SHORT) { it.password1.length > 4 }
+        .check(PASSWORD_TOO_LONG) { it.password1.validateMaxLength(100) }
+        .check(PASSWORD_TOO_SHORT) { it.password1.validateMinLenght(5) }
         .create()
 
 data class Auth @JsonCreator constructor(
@@ -84,23 +80,21 @@ data class Account constructor(
     val phoneNumber: String
 )
 
-fun UpdateAccount.validate(): UpdateAccount =
-    Validator(this)
-        .check(FIRST_NAME_TOO_LONG) { it.firstName.validateMaxLength(100) }
-        .check(SECOND_NAME_TOO_LONG) { it.secondName.length < 100 }
-        .check(INVALID_PHONE_NUMBER_FORMAT) { it.phoneNumber.validateAsPhoneNumber() }
-        .create()
-
 data class UpdateAccount @JsonCreator constructor(
     @param:JsonProperty("firstName")
     val firstName: String,
-
     @param:JsonProperty("secondName")
     val secondName: String,
-
     @param:JsonProperty("phoneNumber")
     val phoneNumber: String
 )
+
+fun UpdateAccount.validate(): UpdateAccount =
+    Validator(this)
+        .check(FIRST_NAME_TOO_LONG) { it.firstName.validateMaxLength(100) }
+        .check(SECOND_NAME_TOO_LONG) { it.secondName.validateMaxLength(100) }
+        .check(INVALID_PHONE_NUMBER_FORMAT) { it.phoneNumber.validateAsPhoneNumber() }
+        .create()
 
 data class UpdateAccountWithUser(
     val firstName: String,
@@ -112,10 +106,8 @@ data class UpdateAccountWithUser(
 data class DeleteAccount @JsonCreator constructor(
     @param:JsonProperty("username")
     val username: String,
-
     @param:JsonProperty("password1")
     val password1: String,
-
     @param:JsonProperty("password2")
     val password2: String
 )
@@ -132,20 +124,24 @@ data class DeleteAccountWithUser(
     val user: User
 )
 
-@PasswordRepeatMatch(first = "newPassword1", second = "newPassword2")
 data class UpdatePassword @JsonCreator constructor(
     @param:JsonProperty("oldPassword")
-    @field:NotBlank(message = PASSWORD_FIELD_IS_EMPTY)
-    @field:Size(min = 5, max = 64, message = INVALID_LENGTH)
     val oldPassword: String,
-
     @param:JsonProperty("newPassword1")
-    @field:NotBlank(message = PASSWORD_FIELD_IS_EMPTY)
-    @field:Size(min = 5 , max = 64, message = INVALID_LENGTH)
     val newPassword1: String,
-
     @param:JsonProperty("newPassword2")
-    @field:NotBlank(message = PASSWORD_FIELD_IS_EMPTY)
-    @field:Size(min = 5, max = 64, message = INVALID_LENGTH)
     val newPassword2: String
 )
+
+data class UpdatePasswordWithUser(
+    val oldPassword: String,
+    val newPassword1: String,
+    val newPassword2: String,
+    val user: User
+)
+
+fun UpdatePassword.validate() =
+    Validator(this)
+        .check(PASSWORD_TOO_SHORT) { it.newPassword1.validateMinLenght(5) }
+        .check(PASSWORDS_DO_NOT_MATCH) { it.newPassword1 == it.newPassword2 }
+        .create()

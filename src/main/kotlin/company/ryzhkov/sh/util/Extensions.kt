@@ -4,6 +4,7 @@ import company.ryzhkov.sh.entity.*
 import company.ryzhkov.sh.security.GeneralUser
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.web.reactive.function.server.ServerRequest
 import reactor.core.publisher.Mono
 import java.security.Principal
 import java.util.regex.Pattern
@@ -34,6 +35,8 @@ fun String.validateAsPhoneNumber(): Boolean =
 
 fun String.validateMaxLength(max: Int) = this.length < max
 
+fun String.validateMinLenght(min: Int) = this.length >= min
+
 fun User.toAccount() = Account(
     this.username,
     this.email,
@@ -41,6 +44,8 @@ fun User.toAccount() = Account(
     this.secondName,
     this.phoneNumber
 )
+
+fun ServerRequest.toMonoUser(): Mono<User> = this.principal().map { it.toUser() }
 
 operator fun UpdateAccount.plus(user: User): UpdateAccountWithUser {
     val (firstName, secondName, phoneNumber) = this

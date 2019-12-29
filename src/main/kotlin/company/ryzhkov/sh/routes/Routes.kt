@@ -30,6 +30,7 @@ class Routes(
                 GET("/account", accountHandler::account)
                 PUT("/account", accountHandler::updateAccount)
                 DELETE("/account", accountHandler::deleteAccount)
+                PUT("/password", accountHandler::updatePassword)
             }
         }
     }.filter { request, next ->

@@ -58,17 +58,15 @@ class UserService (
         return userRepository.save(updatedUser)
     }
 
-    fun deleteAccount(userDetails: UserDetails, deleteAccount: DeleteAccount): Mono<User> {
-        val (username, password1, _) = deleteAccount
-        if (username != userDetails.username) {
+    fun deleteAccount(deleteAccountWithUser: DeleteAccountWithUser): Mono<User> {
+        val (username, password1, _, user) = deleteAccountWithUser
+        if (username != user.username) {
             throw AuthException(ACCESS_DENIED)
         }
-        if (!passwordEncoder.matches(password1, userDetails.password)) {
+        if (!passwordEncoder.matches(password1, user.password)) {
             throw AuthException(INVALID_USERNAME_OR_PASSWORD)
         }
-        val user = (userDetails as GeneralUser).user
         val deletedUser = user.copy(status = "DELETED")
-
         return userRepository.save(deletedUser)
     }
 
