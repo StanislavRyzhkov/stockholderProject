@@ -5,11 +5,13 @@ import company.ryzhkov.sh.handler.ArticleHandler
 import company.ryzhkov.sh.handler.AuthHandler
 import company.ryzhkov.sh.handler.RegistrationHandler
 import company.ryzhkov.sh.repository.KeyElementRepository
+import company.ryzhkov.sh.repository.TextRepository
 import company.ryzhkov.sh.repository.UserRepository
 import company.ryzhkov.sh.routes.Routes
 import company.ryzhkov.sh.security.CustomReactiveAuthenticationManager
 import company.ryzhkov.sh.security.JwtFilter
 import company.ryzhkov.sh.security.TokenProvider
+import company.ryzhkov.sh.service.TextService
 import company.ryzhkov.sh.service.UserService
 import org.springframework.context.ApplicationContextInitializer
 import org.springframework.context.support.GenericApplicationContext
@@ -29,11 +31,17 @@ val beans = beans {
     }
     bean<AppConfig>("appConfig")
     bean<UserRepository>("userRepository")
+    bean<TextRepository>("textRepository")
     bean<KeyElementRepository>("keyElementRepository")
     bean("userService") {
         val userService = UserService(ref(), ref(), ref())
         userService.createAdminUser()
         userService
+    }
+    bean("textService") {
+        val textService = TextService(ref(), ref())
+        textService.createText()
+        textService
     }
     bean {
         CustomReactiveAuthenticationManager(ref(), ref())

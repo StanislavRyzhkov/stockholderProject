@@ -5,11 +5,9 @@ import company.ryzhkov.sh.exception.NotFoundException
 import company.ryzhkov.sh.repository.TextRepository
 import company.ryzhkov.sh.util.Constants.REPLY_CREATED
 import company.ryzhkov.sh.util.Constants.TEXT_NOT_FOUND
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.ApplicationArguments
 import org.springframework.data.domain.PageRequest
 import org.springframework.security.core.userdetails.UserDetails
-import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
@@ -20,9 +18,8 @@ import java.nio.file.Paths
 import java.util.*
 import java.util.stream.Collectors
 import java.util.stream.IntStream
-import javax.annotation.PostConstruct
 
-@Service class TextService @Autowired constructor(
+class TextService (
     private val textRepository: TextRepository,
     private val applicationArguments: ApplicationArguments
 ) {
@@ -62,7 +59,7 @@ import javax.annotation.PostConstruct
             .map { REPLY_CREATED }
     }
 
-    @PostConstruct fun createText() {
+    fun createText() {
         if ("--article" in applicationArguments.sourceArgs) createText("ARTICLE")
         if ("--text" in applicationArguments.sourceArgs) createText("TEXT")
     }
