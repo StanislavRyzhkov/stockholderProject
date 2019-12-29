@@ -1,6 +1,7 @@
 package company.ryzhkov.sh.routes
 
 import company.ryzhkov.sh.handler.AccountHandler
+import company.ryzhkov.sh.handler.ArticleHandler
 import company.ryzhkov.sh.handler.AuthHandler
 import company.ryzhkov.sh.handler.RegistrationHandler
 import company.ryzhkov.sh.util.Constants.ACCESS_DENIED
@@ -14,7 +15,8 @@ import org.springframework.web.reactive.function.server.router
 class Routes(
     private val registrationHandler: RegistrationHandler,
     private val authHandler: AuthHandler,
-    private val accountHandler: AccountHandler
+    private val accountHandler: AccountHandler,
+    private val articleHandler: ArticleHandler
 ) {
 
     fun registrationRouter() = router {
@@ -29,6 +31,16 @@ class Routes(
         "/api/auth".nest {
             accept(MediaType.APPLICATION_JSON).nest {
                 POST("/", authHandler::authenticate)
+            }
+        }
+    }
+
+    fun articleRouter() = router {
+        "/api/articles".nest {
+            accept(MediaType.APPLICATION_JSON).nest {
+                GET("/all", articleHandler::all)
+                GET("/two", articleHandler::two)
+                GET("/detail/{englishTitle}", articleHandler::findOne)
             }
         }
     }

@@ -1,6 +1,7 @@
 package company.ryzhkov.sh.config
 
 import company.ryzhkov.sh.handler.AccountHandler
+import company.ryzhkov.sh.handler.ArticleHandler
 import company.ryzhkov.sh.handler.AuthHandler
 import company.ryzhkov.sh.handler.RegistrationHandler
 import company.ryzhkov.sh.repository.KeyElementRepository
@@ -54,8 +55,11 @@ val beans = beans {
     bean("authHandler") {
         AuthHandler(ref(), ref())
     }
+    bean("articleHandler") {
+        ArticleHandler(ref())
+    }
     bean("Routes") {
-        Routes(ref(), ref(), ref())
+        Routes(ref(), ref(), ref(), ref())
     }
     bean("userAreaRouter") {
         ref<Routes>().userAreaRouter()
@@ -65,6 +69,9 @@ val beans = beans {
     }
     bean("authRouter") {
         ref<Routes>().authRouter()
+    }
+    bean("articlesRouter") {
+        ref<Routes>().articleRouter()
     }
 }
 
