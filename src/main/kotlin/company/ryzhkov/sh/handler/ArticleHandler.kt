@@ -1,6 +1,8 @@
 package company.ryzhkov.sh.handler
 
+import company.ryzhkov.sh.exception.CustomException
 import company.ryzhkov.sh.service.TextService
+import company.ryzhkov.sh.util.toMessage
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.ServerResponse.ok
@@ -16,13 +18,12 @@ class ArticleHandler(private val textService: TextService) {
         ok().body(textService.findAllArticles(2))
 
     fun findOne(serverRequest: ServerRequest): Mono<ServerResponse> =
-        ok()
-            .body(
-                textService
-                    .findFullTextByEnglishTitle(
-                        serverRequest.pathVariable("englishTitle")
-                    )
-            )
+        textService
+            .findFullTextByEnglishTitle(serverRequest.pathVariable("englishTitle"))
+            .flatMap { ok().bodyValue(it) }
+            .onErrorResume (CustomException::class.java) {
+                ServerResponse.status(404).bodyValue(it.message.toMessage())
+            }
 
     fun createReply(serverRequest: ServerRequest): Mono<ServerResponse> =
         TODO()

@@ -1,7 +1,7 @@
 package company.ryzhkov.sh.security
 
 import company.ryzhkov.sh.service.UserService
-import company.ryzhkov.sh.util.Constants.INVALID_USERNAME_OR_PASSWORD
+import company.ryzhkov.sh.util.UsernameConstants.INVALID_USERNAME_OR_PASSWORD
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.ReactiveAuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
