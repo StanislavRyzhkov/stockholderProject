@@ -56,3 +56,8 @@ operator fun DeleteAccount.plus(user: User): DeleteAccountWithUser {
     val (username, password1, password2) = this
     return DeleteAccountWithUser(username, password1, password2, user)
 }
+
+operator fun UpdatePassword.plus(user: User): UpdatePasswordWithUser {
+    val (oldPassword, newPassword1, newPassword2) = this
+    return UpdatePasswordWithUser(oldPassword, newPassword1, newPassword2, user)
+}

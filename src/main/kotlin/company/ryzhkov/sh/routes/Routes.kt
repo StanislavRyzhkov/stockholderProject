@@ -1,6 +1,7 @@
 package company.ryzhkov.sh.routes
 
 import company.ryzhkov.sh.handler.AccountHandler
+import company.ryzhkov.sh.handler.AuthHandler
 import company.ryzhkov.sh.handler.RegistrationHandler
 import company.ryzhkov.sh.util.Constants.ACCESS_DENIED
 import company.ryzhkov.sh.util.toMessage
@@ -12,6 +13,7 @@ import org.springframework.web.reactive.function.server.router
 
 class Routes(
     private val registrationHandler: RegistrationHandler,
+    private val authHandler: AuthHandler,
     private val accountHandler: AccountHandler
 ) {
 
@@ -19,6 +21,14 @@ class Routes(
         "/api/register".nest {
             accept(MediaType.APPLICATION_JSON).nest {
                 POST("/", registrationHandler::register)
+            }
+        }
+    }
+
+    fun authRouter() = router {
+        "/api/auth".nest {
+            accept(MediaType.APPLICATION_JSON).nest {
+                POST("/", authHandler::authenticate)
             }
         }
     }

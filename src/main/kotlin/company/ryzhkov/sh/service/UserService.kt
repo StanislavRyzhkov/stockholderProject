@@ -10,10 +10,10 @@ import company.ryzhkov.sh.util.Constants.ACCESS_DENIED
 import company.ryzhkov.sh.util.Constants.ADMIN_EMAIL
 import company.ryzhkov.sh.util.Constants.ADMIN_PASSWORD
 import company.ryzhkov.sh.util.Constants.ADMIN_USERNAME
-import company.ryzhkov.sh.util.Constants.EMAIL_ALREADY_EXISTS
-import company.ryzhkov.sh.util.Constants.INVALID_USERNAME_OR_PASSWORD
-import company.ryzhkov.sh.util.Constants.USER_ALREADY_EXISTS
-import company.ryzhkov.sh.util.Constants.USER_NOT_FOUND
+import company.ryzhkov.sh.util.EmailConstants.EMAIL_ALREADY_EXISTS
+import company.ryzhkov.sh.util.UserConstants.USER_ALREADY_EXISTS
+import company.ryzhkov.sh.util.UserConstants.USER_NOT_FOUND
+import company.ryzhkov.sh.util.UsernameConstants.INVALID_USERNAME_OR_PASSWORD
 import org.springframework.boot.ApplicationArguments
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService
@@ -70,12 +70,11 @@ class UserService (
         return userRepository.save(deletedUser)
     }
 
-    fun updatePassword(userDetails: UserDetails, updatePassword: UpdatePassword): Mono<User> {
-        val (oldPassword, newPassword1, _) = updatePassword
-        if (!passwordEncoder.matches(oldPassword, userDetails.password)) {
+    fun updatePassword(updatePasswordWithUser: UpdatePasswordWithUser): Mono<User> {
+        val (oldPassword, newPassword1, _, user) = updatePasswordWithUser
+        if (!passwordEncoder.matches(oldPassword, user.password)) {
             throw AuthException(INVALID_USERNAME_OR_PASSWORD)
         }
-        val user = (userDetails as GeneralUser).user
         val userWithUpdatedPassword = user.copy(password = passwordEncoder.encode(newPassword1))
         return userRepository.save(userWithUpdatedPassword)
     }

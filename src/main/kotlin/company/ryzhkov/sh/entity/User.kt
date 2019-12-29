@@ -3,7 +3,6 @@ package company.ryzhkov.sh.entity
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import company.ryzhkov.sh.util.*
-import company.ryzhkov.sh.util.Constants.PASSWORD_FIELD_IS_EMPTY
 import company.ryzhkov.sh.util.EmailConstants.EMAIL_FIELD_IS_EMPTY
 import company.ryzhkov.sh.util.EmailConstants.EMAIL_FIELD_TOO_LONG
 import company.ryzhkov.sh.util.EmailConstants.INVALID_EMAIL
@@ -19,8 +18,6 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
-import javax.validation.constraints.NotBlank
-import javax.validation.constraints.Size
 
 @Document(collection = "users")
 data class User(
@@ -62,13 +59,8 @@ fun Register.validate(): Register =
 
 data class Auth @JsonCreator constructor(
     @param:JsonProperty("username")
-    @field:NotBlank(message = USERNAME_FIELD_IS_EMPTY)
-    @field:Size(max = 64, message = USERNAME_TOO_LONG)
     val username: String,
-
     @param:JsonProperty("password")
-    @field:NotBlank(message = PASSWORD_FIELD_IS_EMPTY)
-    @field:Size(max = 64, message = PASSWORD_TOO_LONG)
     val password: String
 )
 
