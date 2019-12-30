@@ -1,29 +1,40 @@
 package company.ryzhkov.sh
 
-import company.ryzhkov.sh.entity.Register
-import company.ryzhkov.sh.entity.Text
-import company.ryzhkov.sh.entity.TextComponent
-import company.ryzhkov.sh.entity.User
+import company.ryzhkov.sh.entity.*
 import company.ryzhkov.sh.repository.TextRepository
+import company.ryzhkov.sh.repository.UserRepository
+import company.ryzhkov.sh.security.JwtFilter
 import company.ryzhkov.sh.service.UserService
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.context.ApplicationContext
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.web.reactive.function.BodyInserters
+import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.server.WebFilter
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @WebFluxTest(UserService::class)
-class RegistrationTests {
+class RegistrationTests(private val jwtFilter: JwtFilter) {
+
+    @Autowired
+    lateinit var context: ApplicationContext
 
     @MockBean
     lateinit var textRepository: TextRepository
 
+    @MockBean
+    lateinit var userRepository: UserRepository
+
     @Autowired
     lateinit var webTestClient: WebTestClient
+
+    private val client = WebClient.create()
 
     private val user1 = User(
         id=null,
@@ -73,6 +84,28 @@ class RegistrationTests {
 
         webTestClient.get().uri("/api/articles/all")
             .accept(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus().isOk
+    }
+
+    @Test
+    fun bar() {
+        val bar: Mono<User> = Mono.empty()
+
+        Mockito.`when`(userRepository.insert(user1)).thenReturn(Mono.just(user1))
+        Mockito.`when`(userRepository.findByEmail("bob@bob.ru")).thenReturn(bar)
+        Mockito.`when`(userRepository.findByUsername("Bob")).thenReturn(bar)
+        Mockito.`when`(userRepository.findByUsernameAndStatus("Bob", "ACTIVE")).thenReturn(bar)
+
+        val rest: WebTestClient = WebTestClient
+            .bindToApplicationContext(context)
+//            .webFilter<>()
+            .build()
+
+        rest
+            .post().uri("/api/register")
+            .accept(MediaType.APPLICATION_JSON)
+            .body(BodyInserters.fromObject(register))
             .exchange()
             .expectStatus().isOk
     }
