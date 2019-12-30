@@ -78,7 +78,7 @@ val beans = beans {
     bean("recallHandler") {
         RecallHandler(ref())
     }
-    bean("Routes") {
+    bean("routes") {
         Routes(ref(), ref(), ref(), ref(), ref())
     }
     bean("userAreaRouter") {

@@ -40,7 +40,7 @@ class UserService (
             if (!tuple.t1) throw AlreadyExistsException(USER_ALREADY_EXISTS)
             if (!tuple.t2) throw AlreadyExistsException(EMAIL_ALREADY_EXISTS)
             val passwordHash = passwordEncoder.encode(register.password1)
-            userRepository.save(User(
+            userRepository.insert(User(
                 username =  register.username,
                 email =     register.email,
                 password =  passwordHash,
