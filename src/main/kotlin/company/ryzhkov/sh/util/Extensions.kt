@@ -15,7 +15,7 @@ fun Principal.fix(): Authentication = this as Authentication
 
 fun Principal.toUser(): User = (this.fix().principal as UserDetails).fix()
 
-fun String.toMessage(): Message = Message(this)
+fun String?.toMessage(): Message = Message(this)
 
 fun Mono<String>.mapToMessage() = this.map { it.toMessage() }
 

@@ -39,7 +39,7 @@ class ArticleHandler(private val textService: TextService) {
                     .map { it.validate() }
             )
             .map { it.t2 + it.t1 }
-            .map { textService.createReply(it) }
+            .flatMap { textService.createReply(it) }
             .flatMap { ok().bodyValue(REPLY_CREATED) }
             .onErrorResume (CustomException::class.java) {
                 ServerResponse.badRequest().bodyValue(it.message.toMessage())

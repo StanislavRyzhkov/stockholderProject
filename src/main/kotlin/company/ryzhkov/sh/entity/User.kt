@@ -85,7 +85,7 @@ fun UpdateAccount.validate(): UpdateAccount =
     Validator(this)
         .check(FIRST_NAME_TOO_LONG) { it.firstName.validateMaxLength(100) }
         .check(SECOND_NAME_TOO_LONG) { it.secondName.validateMaxLength(100) }
-        .check(INVALID_PHONE_NUMBER_FORMAT) { it.phoneNumber.validateAsPhoneNumber() }
+        .check(INVALID_PHONE_NUMBER_FORMAT) { it.phoneNumber.validateAsPhoneNumber() || it.phoneNumber == "" }
         .create()
 
 data class UpdateAccountWithUser(

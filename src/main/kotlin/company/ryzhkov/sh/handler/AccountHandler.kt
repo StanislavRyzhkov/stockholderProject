@@ -43,7 +43,7 @@ class AccountHandler(
                     .map { it.validate() }
             )
             .map { it.t2 + it.t1 }
-            .map { userService.updateAccount(it) }
+            .flatMap { userService.updateAccount(it) }
             .flatMap { ok().bodyValue(USER_UPDATED.toMessage()) }
             .onErrorResume (CustomException::class.java) {
                 ServerResponse.badRequest().bodyValue(it.message.toMessage())
@@ -58,7 +58,7 @@ class AccountHandler(
                     .map { it.validate() }
             )
             .map { it.t2 + it.t1 }
-            .map { userService.deleteAccount(it) }
+            .flatMap { userService.deleteAccount(it) }
             .flatMap { ok().bodyValue(USER_DELETED.toMessage()) }
             .onErrorResume (CustomException::class.java) {
                 ServerResponse.badRequest().bodyValue(it.message.toMessage())
@@ -73,7 +73,7 @@ class AccountHandler(
                     .map { it.validate() }
             )
             .map { it.t2 + it.t1 }
-            .map { userService.updatePassword(it) }
+            .flatMap { userService.updatePassword(it) }
             .flatMap { ok().bodyValue(PASSWORD_UPDATED.toMessage()) }
             .onErrorResume (CustomException::class.java) {
                 ServerResponse.badRequest().bodyValue(it.message.toMessage())

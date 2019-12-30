@@ -61,7 +61,7 @@ class UserService (
     fun deleteAccount(deleteAccountWithUser: DeleteAccountWithUser): Mono<User> {
         val (username, password1, _, user) = deleteAccountWithUser
         if (username != user.username) {
-            throw AuthException(ACCESS_DENIED)
+            throw AuthException(INVALID_USERNAME_OR_PASSWORD)
         }
         if (!passwordEncoder.matches(password1, user.password)) {
             throw AuthException(INVALID_USERNAME_OR_PASSWORD)
