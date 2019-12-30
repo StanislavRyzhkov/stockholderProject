@@ -2,13 +2,15 @@ package company.ryzhkov.sh.entity
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
+import company.ryzhkov.sh.util.CreateReplyConstants.INVALID_INPUT
+import company.ryzhkov.sh.util.CreateReplyConstants.INVALID_REPLY
+import company.ryzhkov.sh.util.Validator
+import company.ryzhkov.sh.util.validateMaxLength
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import org.springframework.format.annotation.DateTimeFormat
 import java.text.SimpleDateFormat
 import java.util.*
-import javax.validation.constraints.NotBlank
-import javax.validation.constraints.Size
 
 @Document(collection = "texts")
 data class Text(
@@ -107,12 +109,19 @@ data class TextInfo(
 
 data class CreateReply @JsonCreator constructor(
     @param:JsonProperty("englishTitle")
-    @field:NotBlank
-    @field:Size(max = 1000, message = "Некорректный ввод")
     val englishTitle: String,
-
     @param:JsonProperty("content")
-    @field:NotBlank
-    @field:Size(max = 1000, message = "Размер сообщения превышает 1000 символов")
     val content: String
+)
+
+fun CreateReply.validate(): CreateReply =
+    Validator(this)
+        .check(INVALID_INPUT) { it.englishTitle.validateMaxLength(1000) }
+        .check(INVALID_REPLY) { it.content.validateMaxLength(1000) }
+        .create()
+
+data class CreateReplyWithUser(
+    val englishTitle: String,
+    val content: String,
+    val user: User
 )

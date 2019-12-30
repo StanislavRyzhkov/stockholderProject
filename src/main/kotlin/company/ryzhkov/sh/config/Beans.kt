@@ -1,16 +1,16 @@
 package company.ryzhkov.sh.config
 
-import company.ryzhkov.sh.handler.AccountHandler
-import company.ryzhkov.sh.handler.ArticleHandler
-import company.ryzhkov.sh.handler.AuthHandler
-import company.ryzhkov.sh.handler.RegistrationHandler
+import company.ryzhkov.sh.handler.*
 import company.ryzhkov.sh.repository.KeyElementRepository
+import company.ryzhkov.sh.repository.RecallRepository
 import company.ryzhkov.sh.repository.TextRepository
 import company.ryzhkov.sh.repository.UserRepository
 import company.ryzhkov.sh.routes.Routes
 import company.ryzhkov.sh.security.CustomReactiveAuthenticationManager
 import company.ryzhkov.sh.security.JwtFilter
 import company.ryzhkov.sh.security.TokenProvider
+import company.ryzhkov.sh.service.KeyService
+import company.ryzhkov.sh.service.RecallService
 import company.ryzhkov.sh.service.TextService
 import company.ryzhkov.sh.service.UserService
 import org.springframework.context.ApplicationContextInitializer
@@ -33,6 +33,7 @@ val beans = beans {
     bean<UserRepository>("userRepository")
     bean<TextRepository>("textRepository")
     bean<KeyElementRepository>("keyElementRepository")
+    bean<RecallRepository>("recallRepository")
     bean("userService") {
         val userService = UserService(ref(), ref(), ref())
         userService.createAdminUser()
@@ -42,6 +43,14 @@ val beans = beans {
         val textService = TextService(ref(), ref())
         textService.createText()
         textService
+    }
+    bean("recallService") {
+        RecallService(ref())
+    }
+    bean("keyService") {
+        val keyService = KeyService(ref(), ref())
+        keyService.createKey()
+        keyService
     }
     bean {
         CustomReactiveAuthenticationManager(ref(), ref())
@@ -66,8 +75,11 @@ val beans = beans {
     bean("articleHandler") {
         ArticleHandler(ref())
     }
+    bean("recallHandler") {
+        RecallHandler(ref())
+    }
     bean("Routes") {
-        Routes(ref(), ref(), ref(), ref())
+        Routes(ref(), ref(), ref(), ref(), ref())
     }
     bean("userAreaRouter") {
         ref<Routes>().userAreaRouter()
@@ -80,6 +92,12 @@ val beans = beans {
     }
     bean("articlesRouter") {
         ref<Routes>().articleRouter()
+    }
+    bean("replyRouter") {
+        ref<Routes>().replyRouter()
+    }
+    bean("recallRouter") {
+        ref<Routes>().recallRouter()
     }
 }
 

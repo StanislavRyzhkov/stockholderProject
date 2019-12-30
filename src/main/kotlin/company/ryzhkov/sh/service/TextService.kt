@@ -3,11 +3,9 @@ package company.ryzhkov.sh.service
 import company.ryzhkov.sh.entity.*
 import company.ryzhkov.sh.exception.NotFoundException
 import company.ryzhkov.sh.repository.TextRepository
-import company.ryzhkov.sh.util.Constants.REPLY_CREATED
-import company.ryzhkov.sh.util.Constants.TEXT_NOT_FOUND
+import company.ryzhkov.sh.util.TextConstants.TEXT_NOT_FOUND
 import org.springframework.boot.ApplicationArguments
 import org.springframework.data.domain.PageRequest
-import org.springframework.security.core.userdetails.UserDetails
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
@@ -40,15 +38,14 @@ class TextService (
         )
         .map { TextInfo.createInstance(it) }
 
-    fun createReply(userDetails: UserDetails, createReply: CreateReply): Mono<String> {
-        val (englishTitle, content) = createReply
+    fun createReply(createReplyWithUser: CreateReplyWithUser): Mono<Text> {
+        val (englishTitle, content, user) = createReplyWithUser
         val textMono = textRepository.findByEnglishTitle(englishTitle)
         val newReply = Reply(
-            username = userDetails.username,
+            username = user.username,
             content = content,
             created = Date()
         )
-
         return textMono
             .flatMap { article ->
                 val replies = article.replies
@@ -56,7 +53,6 @@ class TextService (
                 val updatedArticle = article.copy(replies = replies)
                 textRepository.save(updatedArticle)
             }
-            .map { REPLY_CREATED }
     }
 
     fun createText() {
@@ -80,14 +76,12 @@ class TextService (
                 )
             }
             .collect(Collectors.toList())
-
         val text = Text(
             title = titles[0],
             englishTitle = titles[1],
             kind = kind,
             textComponents = textComponents
         )
-
         textRepository
             .insert(text)
             .subscribeOn(Schedulers.elastic())

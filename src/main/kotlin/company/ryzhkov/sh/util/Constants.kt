@@ -41,29 +41,37 @@ object PhoneNumberConstants {
     const val INVALID_PHONE_NUMBER_FORMAT = "Некорректный формат номера телефона"
 }
 
-object Constants {
-
-    const val PASSWORD_FIELD_IS_EMPTY = "Не заполнено поле \"Пароль\""
-
-    const val ACCESS_DENIED = "Доступ запрещен"
-
-    const val TEXT_NOT_FOUND = "Текст не найден"
-
+object CreateReplyConstants {
+    const val INVALID_INPUT = "Некорректный ввод"
+    const val INVALID_REPLY = "Размер сообщения превышает 1000 символов"
     const val REPLY_CREATED = "Комментарий создан"
+}
 
-    const val INVALID_FIRST_NAME = "Некорректная длина имени"
+object RecallConstants {
+    const val AUTHOR_TOO_LONG = "Слишком длинное имя"
+    const val AUTHOR_IS_EMPTY = "Не заполнено имя"
 
-    const val INVALID_SECOND_NAME = "Некорректная длина фамилии"
+    const val TOPIC_TOO_LONG = "Слишком длинная тема"
+    const val TOPIC_IS_EMPTY = "Не заполнено поле тема"
 
-    const val INVALID_PHONE_NUMBER_LENGTH = "Некорректная длина номера телефона"
+    const val EMAIL_IS_EMPTY = "Не заполнено поле email"
 
-    const val INVALID_LENGTH = "Некорректная длина поля"
+    const val TEXT_TOO_LONG = "Слишком длинный текст"
+    const val TEXT_IS_EMPTY = "Не заполнено поле текст"
 
     const val RECALL_CREATED = "Мы получили Ваш отзыв"
+}
 
+object TextConstants {
+    const val TEXT_NOT_FOUND = "Текст не найден"
+}
+
+object AccessConstants {
+    const val ACCESS_DENIED = "Доступ запрещен"
+}
+
+object AdminConstants {
     const val ADMIN_USERNAME = "admin"
-
     const val ADMIN_EMAIL = "rvmail@mail.ru"
-
     const val ADMIN_PASSWORD = "admin"
 }

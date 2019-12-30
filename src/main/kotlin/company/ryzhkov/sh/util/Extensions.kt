@@ -61,3 +61,12 @@ operator fun UpdatePassword.plus(user: User): UpdatePasswordWithUser {
     val (oldPassword, newPassword1, newPassword2) = this
     return UpdatePasswordWithUser(oldPassword, newPassword1, newPassword2, user)
 }
+
+operator fun CreateReply.plus(user: User): CreateReplyWithUser {
+    val (englishTitle, content) = this
+    return CreateReplyWithUser(
+        englishTitle = englishTitle,
+        content = content,
+        user = user
+    )
+}

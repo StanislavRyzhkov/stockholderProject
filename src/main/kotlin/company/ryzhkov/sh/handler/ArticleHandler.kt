@@ -1,8 +1,13 @@
 package company.ryzhkov.sh.handler
 
+import company.ryzhkov.sh.entity.CreateReply
+import company.ryzhkov.sh.entity.validate
 import company.ryzhkov.sh.exception.CustomException
 import company.ryzhkov.sh.service.TextService
+import company.ryzhkov.sh.util.CreateReplyConstants.REPLY_CREATED
+import company.ryzhkov.sh.util.plus
 import company.ryzhkov.sh.util.toMessage
+import company.ryzhkov.sh.util.toMonoUser
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.ServerResponse.ok
@@ -26,5 +31,17 @@ class ArticleHandler(private val textService: TextService) {
             }
 
     fun createReply(serverRequest: ServerRequest): Mono<ServerResponse> =
-        TODO()
+        Mono
+            .zip(
+                serverRequest.toMonoUser(),
+                serverRequest
+                    .bodyToMono(CreateReply::class.java)
+                    .map { it.validate() }
+            )
+            .map { it.t2 + it.t1 }
+            .map { textService.createReply(it) }
+            .flatMap { ok().bodyValue(REPLY_CREATED) }
+            .onErrorResume (CustomException::class.java) {
+                ServerResponse.badRequest().bodyValue(it.message.toMessage())
+            }
 }

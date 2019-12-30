@@ -2,7 +2,7 @@ package company.ryzhkov.sh.security
 
 import company.ryzhkov.sh.exception.AuthException
 import company.ryzhkov.sh.repository.KeyElementRepository
-import company.ryzhkov.sh.util.Constants.ACCESS_DENIED
+import company.ryzhkov.sh.util.AccessConstants.ACCESS_DENIED
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import org.springframework.http.server.reactive.ServerHttpRequest
