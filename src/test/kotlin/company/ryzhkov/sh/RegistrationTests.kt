@@ -1,30 +1,29 @@
 package company.ryzhkov.sh
 
 import company.ryzhkov.sh.entity.Register
+import company.ryzhkov.sh.entity.Text
+import company.ryzhkov.sh.entity.TextComponent
 import company.ryzhkov.sh.entity.User
-import company.ryzhkov.sh.repository.UserRepository
+import company.ryzhkov.sh.repository.TextRepository
+import company.ryzhkov.sh.service.UserService
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
-import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
-import org.springframework.web.reactive.function.BodyInserters
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
-@WebFluxTest
-@ExtendWith(SpringExtension::class)
+@WebFluxTest(UserService::class)
 class RegistrationTests {
+
+    @MockBean
+    lateinit var textRepository: TextRepository
 
     @Autowired
     lateinit var webTestClient: WebTestClient
-
-    @MockBean
-    lateinit var userRepository: UserRepository
-
 
     private val user1 = User(
         id=null,
@@ -44,20 +43,36 @@ class RegistrationTests {
         password2 = "12345"
     )
 
+    private val textComponent = TextComponent(1, "a", "a", "a")
+    private val textComponent2 = TextComponent(2, "a", "a", "a")
+    private val textComponent3 = TextComponent(3, "a", "a", "a")
+    private val textComponent4 = TextComponent(4, "a", "a", "a")
+    private val textComponent5 = TextComponent(5, "a", "a", "a")
+
+    private val article = Text(
+        title = "bar",
+        englishTitle = "bar",
+        kind = "baz",
+        textComponents = listOf(
+            textComponent,
+            textComponent2,
+            textComponent3,
+            textComponent4,
+            textComponent5
+        )
+    )
+
     private val users = listOf(user1)
+    private val texts = Flux.fromIterable(mutableListOf(article))
 
     @Test
     fun testRegister() {
         val bar: Mono<User> = Mono.empty()
 
-        Mockito.`when`(userRepository.insert(user1)).thenReturn(Mono.just(user1))
-        Mockito.`when`(userRepository.findByUsername("Bob")).thenReturn(bar)
-        Mockito.`when`(userRepository.findByUsernameAndStatus("Bob", "ACTIVE")).thenReturn(bar)
-        Mockito.`when`(userRepository.findByEmail("bob@bob.ru")).thenReturn(bar)
+        Mockito.`when`(textRepository.findByKindOrderByCreatedDesc("ARTICLE")).thenReturn(texts)
 
-        webTestClient.post().uri("/api/register")
+        webTestClient.get().uri("/api/articles/all")
             .accept(MediaType.APPLICATION_JSON)
-            .body(BodyInserters.fromObject(register))
             .exchange()
             .expectStatus().isOk
     }
