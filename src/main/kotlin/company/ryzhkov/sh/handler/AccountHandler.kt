@@ -35,13 +35,11 @@ class AccountHandler(
         )
 
     fun updateAccount(serverRequest: ServerRequest): Mono<ServerResponse> =
-        Mono
-            .zip(
-                serverRequest.toMonoUser(),
-                serverRequest
-                    .bodyToMono(UpdateAccount::class.java)
-                    .map { it.validate() }
-            )
+        Mono.zip(
+            serverRequest.toMonoUser(),
+            serverRequest
+                .bodyToMono(UpdateAccount::class.java)
+                .map { it.validate() })
             .map { it.t2 + it.t1 }
             .flatMap { userService.updateAccount(it) }
             .flatMap { ok().bodyValue(USER_UPDATED.toMessage()) }
