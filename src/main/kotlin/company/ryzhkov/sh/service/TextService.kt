@@ -46,13 +46,12 @@ class TextService (
             content = content,
             created = Date()
         )
-        return textMono
-            .flatMap { article ->
-                val replies = article.replies
-                replies.add(newReply)
-                val updatedArticle = article.copy(replies = replies)
-                textRepository.save(updatedArticle)
-            }
+        return textMono.flatMap { article ->
+            val replies = article.replies
+            replies.add(newReply)
+            val updatedArticle = article.copy(replies = replies)
+            textRepository.save(updatedArticle)
+        }
     }
 
     fun createText() {
@@ -82,8 +81,7 @@ class TextService (
             kind = kind,
             textComponents = textComponents
         )
-        textRepository
-            .insert(text)
+        textRepository.insert(text)
             .subscribeOn(Schedulers.elastic())
             .subscribe { log.info("Text {} created", it.title) }
     }

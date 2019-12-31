@@ -6,7 +6,6 @@ import company.ryzhkov.sh.exception.AuthException
 import company.ryzhkov.sh.exception.NotFoundException
 import company.ryzhkov.sh.repository.UserRepository
 import company.ryzhkov.sh.security.GeneralUser
-import company.ryzhkov.sh.util.AccessConstants.ACCESS_DENIED
 import company.ryzhkov.sh.util.AdminConstants.ADMIN_EMAIL
 import company.ryzhkov.sh.util.AdminConstants.ADMIN_PASSWORD
 import company.ryzhkov.sh.util.AdminConstants.ADMIN_USERNAME

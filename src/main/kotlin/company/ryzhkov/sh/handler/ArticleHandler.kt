@@ -31,13 +31,7 @@ class ArticleHandler(private val textService: TextService) {
             }
 
     fun createReply(serverRequest: ServerRequest): Mono<ServerResponse> =
-        Mono
-            .zip(
-                serverRequest.toMonoUser(),
-                serverRequest
-                    .bodyToMono(CreateReply::class.java)
-                    .map { it.validate() }
-            )
+        Mono.zip(serverRequest.toMonoUser(), serverRequest.bodyToMono(CreateReply::class.java).map { it.validate() })
             .map { it.t2 + it.t1 }
             .flatMap { textService.createReply(it) }
             .flatMap { ok().bodyValue(REPLY_CREATED) }

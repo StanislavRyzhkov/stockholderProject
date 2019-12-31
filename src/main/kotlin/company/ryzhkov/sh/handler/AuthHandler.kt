@@ -21,13 +21,13 @@ class AuthHandler(
     fun authenticate(serverRequest: ServerRequest): Mono<ServerResponse> =
         serverRequest
             .bodyToMono(Auth::class.java)
-            .flatMap {
+            .flatMap { auth ->
                 manager.authenticate(
-                    UsernamePasswordAuthenticationToken(it.username, it.password)
+                    UsernamePasswordAuthenticationToken(auth.username, auth.password)
                 )
             }
-            .map { provider.createToken(it) }
-            .flatMap { ok().bodyValue(it.toMessage()) }
+            .map { authentication -> provider.createToken(authentication) }
+            .flatMap { token -> ok().bodyValue(token.toMessage()) }
             .onErrorResume(
                 { (it is CustomException) || (it is BadCredentialsException) },
                 { badRequest().bodyValue(it?.message.toMessage()) }
