@@ -143,19 +143,23 @@ class AccountTests(@Autowired val client: WebTestClient) {
             .isEqualTo(Message(INVALID_PHONE_NUMBER_FORMAT))
     }
 
-//    @Test
-//    fun deleteAccount() {
-//        val deleteAccount = DeleteAccount("admin", "admin", "admin")
-//
-//        client.put().uri("/api/user_area/account/delete")
-//            .bodyValue(deleteAccount)
-//            .header("Authorization", "Bearer $token")
-//            .accept(APPLICATION_JSON)
-//            .exchange()
-//            .expectStatus().isOk
-//            .expectBody<Message>()
-//            .isEqualTo(Message(USER_DELETED))
-//    }
+    /*
+
+    @Test
+    fun deleteAccount() {
+        val deleteAccount = DeleteAccount("admin", "admin", "admin")
+
+        client.put().uri("/api/user_area/account/delete")
+            .bodyValue(deleteAccount)
+            .header("Authorization", "Bearer $token")
+            .accept(APPLICATION_JSON)
+            .exchange()
+            .expectStatus().isOk
+            .expectBody<Message>()
+            .isEqualTo(Message(USER_DELETED))
+    }
+
+     */
 
     @Test
     fun deleteAccountWrongUsername() {
