@@ -1,8 +1,9 @@
 package company.ryzhkov.sh.entity
 
 import org.springframework.web.bind.support.WebExchangeBindException
+import java.io.Serializable
 
-data class Message(val text: String?) {
+data class Message(val text: String?) : Serializable {
     companion object {
         fun accessDenied(): Message = Message("Доступ запрещен")
 
