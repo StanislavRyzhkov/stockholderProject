@@ -17,7 +17,7 @@ class RecallHandler(private val recallService: RecallService) {
         serverRequest
             .bodyToMono(Recall::class.java)
             .map { it.validate() }
-            .map { recallService.createRecall(it) }
+            .flatMap { recallService.createRecall(it) }
             .flatMap { ok().bodyValue(RECALL_CREATED.toMessage()) }
             .onErrorResume (CustomException::class.java) {
                 ServerResponse.badRequest().bodyValue(it.message.toMessage())

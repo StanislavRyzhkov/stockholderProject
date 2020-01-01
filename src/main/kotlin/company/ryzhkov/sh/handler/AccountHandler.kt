@@ -21,59 +21,37 @@ class AccountHandler(
 ) {
 
     fun username(serverRequest: ServerRequest): Mono<ServerResponse> =
-        ok().body(
-            serverRequest
-                .principal()
-                .map { it.toUser().username.toMessage() }
-        )
+        ok().body(serverRequest
+            .principal()
+            .map { it.toUser().username.toMessage() })
 
     fun account(serverRequest: ServerRequest): Mono<ServerResponse> =
-        ok().body(
-            serverRequest
-                .principal()
-                .map { it.toUser().toAccount() }
-        )
+        ok().body(serverRequest
+            .principal()
+            .map { it.toUser().toAccount() })
 
     fun updateAccount(serverRequest: ServerRequest): Mono<ServerResponse> =
-        Mono
-            .zip(
-                serverRequest.toMonoUser(),
-                serverRequest
-                    .bodyToMono(UpdateAccount::class.java)
-                    .map { it.validate() }
-            )
+        Mono.zip(serverRequest.toMonoUser(), serverRequest.bodyToMono(UpdateAccount::class.java).map { it.validate() })
             .map { it.t2 + it.t1 }
-            .map { userService.updateAccount(it) }
+            .flatMap { userService.updateAccount(it) }
             .flatMap { ok().bodyValue(USER_UPDATED.toMessage()) }
             .onErrorResume (CustomException::class.java) {
                 ServerResponse.badRequest().bodyValue(it.message.toMessage())
             }
 
     fun deleteAccount(serverRequest: ServerRequest): Mono<ServerResponse> =
-        Mono
-            .zip(
-                serverRequest.toMonoUser(),
-                serverRequest
-                    .bodyToMono(DeleteAccount::class.java)
-                    .map { it.validate() }
-            )
+        Mono.zip(serverRequest.toMonoUser(), serverRequest.bodyToMono(DeleteAccount::class.java).map { it.validate() })
             .map { it.t2 + it.t1 }
-            .map { userService.deleteAccount(it) }
+            .flatMap { userService.deleteAccount(it) }
             .flatMap { ok().bodyValue(USER_DELETED.toMessage()) }
             .onErrorResume (CustomException::class.java) {
                 ServerResponse.badRequest().bodyValue(it.message.toMessage())
             }
 
     fun updatePassword(serverRequest: ServerRequest): Mono<ServerResponse> =
-        Mono
-            .zip(
-                serverRequest.toMonoUser(),
-                serverRequest
-                    .bodyToMono(UpdatePassword::class.java)
-                    .map { it.validate() }
-            )
+        Mono.zip(serverRequest.toMonoUser(), serverRequest.bodyToMono(UpdatePassword::class.java).map { it.validate() })
             .map { it.t2 + it.t1 }
-            .map { userService.updatePassword(it) }
+            .flatMap { userService.updatePassword(it) }
             .flatMap { ok().bodyValue(PASSWORD_UPDATED.toMessage()) }
             .onErrorResume (CustomException::class.java) {
                 ServerResponse.badRequest().bodyValue(it.message.toMessage())

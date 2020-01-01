@@ -63,13 +63,14 @@ class Routes(
         }
     }.filter(handlerFilterFunction)
 
+    // It's not allowed to send a body with DELETE! So, we use PUT METHOD instead of it: PUT /account/delete
     fun userAreaRouter() = router {
         "/api/user_area".nest {
             accept(MediaType.APPLICATION_JSON).nest {
                 GET("/username", accountHandler::username)
                 GET("/account", accountHandler::account)
                 PUT("/account", accountHandler::updateAccount)
-                DELETE("/account", accountHandler::deleteAccount)
+                PUT("/account/delete", accountHandler::deleteAccount)
                 PUT("/password", accountHandler::updatePassword)
             }
         }
