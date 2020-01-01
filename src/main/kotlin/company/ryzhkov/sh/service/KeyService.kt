@@ -4,17 +4,20 @@ import company.ryzhkov.sh.entity.KeyElement
 import company.ryzhkov.sh.repository.KeyElementRepository
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.ApplicationArguments
+import org.springframework.stereotype.Service
 import java.util.*
+import javax.annotation.PostConstruct
 
-class KeyService (
+@Service class KeyService @Autowired constructor(
     private val keyElementRepository: KeyElementRepository,
     private val applicationArguments: ApplicationArguments
 ) {
 
     private val log: org.slf4j.Logger = org.slf4j.LoggerFactory.getLogger(KeyService::class.java)
 
-    fun createKey() {
+    @PostConstruct fun createKey() {
         if ("--key" in applicationArguments.sourceArgs) {
             val key = Keys.secretKeyFor(SignatureAlgorithm.HS256)
             val bytes = key.encoded

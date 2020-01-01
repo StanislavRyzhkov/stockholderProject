@@ -32,9 +32,6 @@ dependencies {
 	}
 	testImplementation("io.projectreactor:reactor-test")
 	testImplementation("org.springframework.security:spring-security-test")
-	// additional:
-	testImplementation("org.junit.jupiter:junit-jupiter-api")
-	testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }
 
 tasks.withType<Test> {

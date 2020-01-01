@@ -2,28 +2,31 @@ package company.ryzhkov.sh.security
 
 import company.ryzhkov.sh.exception.AuthException
 import company.ryzhkov.sh.repository.KeyElementRepository
-import company.ryzhkov.sh.util.AccessConstants.ACCESS_DENIED
+import company.ryzhkov.sh.util.Constants.ACCESS_DENIED
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.server.reactive.ServerHttpRequest
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService
 import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 import java.security.Key
 import java.util.*
+import javax.annotation.PostConstruct
 import javax.crypto.spec.SecretKeySpec
 
-class TokenProvider(
+@Component class TokenProvider @Autowired constructor(
     private val userService: ReactiveUserDetailsService,
     private val keyElementRepository: KeyElementRepository
 ) {
 
     private var key: Key? = null
 
-    fun init() {
+    @PostConstruct fun init() {
         keyElementRepository.findAll().take(1).subscribe { (_, secretString) ->
             val bytes = Base64.getDecoder().decode(secretString)
             key = SecretKeySpec(bytes, SignatureAlgorithm.HS256.jcaName)
@@ -58,7 +61,7 @@ class TokenProvider(
             .compact()
     }
 
-    private fun getUsername(request: ServerHttpRequest): Mono<String> = Mono
+    fun getUsername(request: ServerHttpRequest): Mono<String> = Mono
         .fromCallable {
             val list = request.headers["Authorization"]
             if (list == null || list.isEmpty()) {

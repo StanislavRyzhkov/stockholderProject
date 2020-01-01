@@ -1,28 +1,10 @@
 package company.ryzhkov.sh.exception
 
-import company.ryzhkov.sh.entity.Message
-import company.ryzhkov.sh.util.toMessage
+class NotFoundException(override val message: String) : RuntimeException(message)
 
-sealed class CustomException(override val message: String) : RuntimeException() {
-    fun toMessage(): Message = this.message.toMessage()
+class AlreadyExistsException(override val message: String) : RuntimeException(message)
+
+class AuthException : RuntimeException {
+    constructor(message: String) : super(message)
+    constructor(message: String, cause: Throwable) : super(message, cause)
 }
-
-data class NotFoundException(
-    override val message: String,
-    val code: Int = 200
-) : CustomException(message)
-
-data class AlreadyExistsException(
-    override val message: String,
-    val code: Int = 400
-) : CustomException(message)
-
-data class ValidationException(
-    override val message: String,
-    val code: Int = 400
-) : CustomException(message)
-
-data class AuthException(
-    override val message: String,
-    val code: Int = 400
-) : CustomException(message)

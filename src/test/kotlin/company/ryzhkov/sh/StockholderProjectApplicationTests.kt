@@ -9,5 +9,5 @@ class StockholderProjectApplicationTests {
 	@Test
 	fun contextLoads() {
 	}
-}
 
+}

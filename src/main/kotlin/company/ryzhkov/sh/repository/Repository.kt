@@ -6,10 +6,11 @@ import company.ryzhkov.sh.entity.Text
 import company.ryzhkov.sh.entity.User
 import org.springframework.data.domain.Pageable
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository
+import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
-interface UserRepository : ReactiveMongoRepository<User, String> {
+@Repository interface UserRepository : ReactiveMongoRepository<User, String> {
 
     fun findByUsername(username: String): Mono<User>
 
@@ -18,9 +19,9 @@ interface UserRepository : ReactiveMongoRepository<User, String> {
     fun findByEmail(email: String): Mono<User>
 }
 
-interface KeyElementRepository : ReactiveMongoRepository<KeyElement, String>
+@Repository interface KeyElementRepository : ReactiveMongoRepository<KeyElement, String>
 
-interface TextRepository : ReactiveMongoRepository<Text, String> {
+@Repository interface TextRepository : ReactiveMongoRepository<Text, String> {
 
     fun findByEnglishTitle(englishTitle: String): Mono<Text>
 
@@ -29,4 +30,4 @@ interface TextRepository : ReactiveMongoRepository<Text, String> {
     fun findByKindOrderByCreatedDesc(kind: String, pageable: Pageable): Flux<Text>
 }
 
-interface RecallRepository : ReactiveMongoRepository<Recall, String>
+@Repository interface RecallRepository : ReactiveMongoRepository<Recall, String>
