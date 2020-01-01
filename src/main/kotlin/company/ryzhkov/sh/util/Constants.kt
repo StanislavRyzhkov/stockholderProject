@@ -75,3 +75,12 @@ object AdminConstants {
     const val ADMIN_EMAIL = "rvmail@mail.ru"
     const val ADMIN_PASSWORD = "admin"
 }
+
+object RolesConstants {
+    const val ROLE_ADMIN = "ROLE_ADMIN"
+    const val ROLE_USER = "ROLE_USER"
+}
+
+object ArgsConstants {
+    const val ARG_ADMIN = "--admin"
+}

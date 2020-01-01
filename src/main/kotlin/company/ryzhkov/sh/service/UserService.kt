@@ -9,7 +9,10 @@ import company.ryzhkov.sh.security.GeneralUser
 import company.ryzhkov.sh.util.AdminConstants.ADMIN_EMAIL
 import company.ryzhkov.sh.util.AdminConstants.ADMIN_PASSWORD
 import company.ryzhkov.sh.util.AdminConstants.ADMIN_USERNAME
+import company.ryzhkov.sh.util.ArgsConstants.ARG_ADMIN
 import company.ryzhkov.sh.util.EmailConstants.EMAIL_ALREADY_EXISTS
+import company.ryzhkov.sh.util.RolesConstants.ROLE_ADMIN
+import company.ryzhkov.sh.util.RolesConstants.ROLE_USER
 import company.ryzhkov.sh.util.UserConstants.USER_ALREADY_EXISTS
 import company.ryzhkov.sh.util.UserConstants.USER_NOT_FOUND
 import company.ryzhkov.sh.util.UsernameConstants.INVALID_USERNAME_OR_PASSWORD
@@ -43,7 +46,7 @@ class UserService (
                 username =  register.username,
                 email =     register.email,
                 password =  passwordHash,
-                roles =     Collections.singletonList("ROLE_USER")
+                roles =     Collections.singletonList(ROLE_USER)
             ))
         }
 
@@ -79,12 +82,12 @@ class UserService (
     }
 
     fun createAdminUser() {
-        if ("--admin" in applicationArguments.sourceArgs) {
+        if (ARG_ADMIN in applicationArguments.sourceArgs) {
             val user = User(
                 username =  ADMIN_USERNAME,
                 email =     ADMIN_EMAIL,
                 password =  passwordEncoder.encode(ADMIN_PASSWORD),
-                roles =     listOf("ROLE_ADMIN", "ROLE_USER")
+                roles =     listOf(ROLE_ADMIN, ROLE_USER)
             )
             userRepository
                 .insert(user)
