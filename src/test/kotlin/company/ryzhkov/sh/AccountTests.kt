@@ -4,9 +4,9 @@ import company.ryzhkov.sh.entity.*
 import company.ryzhkov.sh.util.AccessConstants.ACCESS_DENIED
 import company.ryzhkov.sh.util.PasswordConstants.PASSWORD_UPDATED
 import company.ryzhkov.sh.util.PhoneNumberConstants.INVALID_PHONE_NUMBER_FORMAT
-import company.ryzhkov.sh.util.UserConstants.USER_DELETED
 import company.ryzhkov.sh.util.UserConstants.USER_UPDATED
 import company.ryzhkov.sh.util.UsernameConstants.INVALID_USERNAME_OR_PASSWORD
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -23,7 +23,9 @@ import org.springframework.test.web.reactive.server.expectBody
 class AccountTests(@Autowired val client: WebTestClient) {
 
     // token for admin
-    val token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGVzIjpbIlJPTEVfQURNSU4iLCJST0xFX1VTRVIiXSwiaWF0IjoxNTc3NzI1ODY3LCJleHAiOjE1ODAyMjU4Njd9.zLhbWaYnDurO8Expao7Bv_5Jk7iymZIypZR_rngPkE4"
+    val token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGVzIjpbIlJ" +
+        "PTEVfQURNSU4iLCJST0xFX1VTRVIiXSwiaWF0IjoxNTc3NzI1ODY3LCJleHAiOjE1OD" +
+        "AyMjU4Njd9.zLhbWaYnDurO8Expao7Bv_5Jk7iymZIypZR_rngPkE4"
     val badToken = "bad!"
 
     @Test
@@ -57,14 +59,14 @@ class AccountTests(@Autowired val client: WebTestClient) {
             .expectStatus().isOk
             .expectBody<Account>()
             .consumeWith {
-                it.responseBody?.secondName == "Smith"
+                Assertions.assertEquals("", it.responseBody?.secondName)
             }
     }
 
     @Test
     fun updateAccountUpdateFirstName() {
         val updateAccount = UpdateAccount("John", "Smith", "")
-        val updateAccountBack = UpdateAccount("", "Smith", "")
+        val updateAccountBack = UpdateAccount("", "", "")
 
         client.put().uri("/api/user_area/account")
             .bodyValue(updateAccount)
@@ -82,7 +84,8 @@ class AccountTests(@Autowired val client: WebTestClient) {
             .expectStatus().isOk
             .expectBody<Account>()
             .consumeWith {
-                it.responseBody?.firstName == "John"
+                Assertions.assertEquals("John", it.responseBody?.firstName)
+                Assertions.assertEquals("Smith", it.responseBody?.secondName)
             }
 
         client.put().uri("/api/user_area/account")
@@ -97,8 +100,8 @@ class AccountTests(@Autowired val client: WebTestClient) {
 
     @Test
     fun updateAccountUpdatePhoneNumber() {
-        val updateAccount = UpdateAccount("", "Smith", "+7-900-000-0000")
-        val updateAccountBack = UpdateAccount("", "Smith", "")
+        val updateAccount = UpdateAccount("", "", "+7-900-000-0000")
+        val updateAccountBack = UpdateAccount("", "", "")
 
         client.put().uri("/api/user_area/account")
             .bodyValue(updateAccount)
@@ -116,7 +119,7 @@ class AccountTests(@Autowired val client: WebTestClient) {
             .expectStatus().isOk
             .expectBody<Account>()
             .consumeWith {
-                it.responseBody?.phoneNumber == "+7-900-000-0000"
+                Assertions.assertEquals("+7-900-000-0000", it.responseBody?.phoneNumber)
             }
 
         client.put().uri("/api/user_area/account")
