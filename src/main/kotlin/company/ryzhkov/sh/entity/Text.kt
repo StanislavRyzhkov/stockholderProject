@@ -2,8 +2,10 @@ package company.ryzhkov.sh.entity
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
+import company.ryzhkov.sh.util.CreateReplyConstants.ARTICLE_NAME_IS_EMPTY
 import company.ryzhkov.sh.util.CreateReplyConstants.INVALID_INPUT
 import company.ryzhkov.sh.util.CreateReplyConstants.INVALID_REPLY
+import company.ryzhkov.sh.util.CreateReplyConstants.REPLY_IS_EMPTY
 import company.ryzhkov.sh.util.Validator
 import company.ryzhkov.sh.util.validateMaxLength
 import org.springframework.data.annotation.Id
@@ -117,7 +119,9 @@ data class CreateReply @JsonCreator constructor(
 fun CreateReply.validate(): CreateReply =
     Validator(this)
         .check(INVALID_INPUT) { it.englishTitle.validateMaxLength(1000) }
+        .check(ARTICLE_NAME_IS_EMPTY) { it.englishTitle.isNotEmpty() }
         .check(INVALID_REPLY) { it.content.validateMaxLength(1000) }
+        .check(REPLY_IS_EMPTY) { it.content.isNotEmpty() }
         .create()
 
 data class CreateReplyWithUser(

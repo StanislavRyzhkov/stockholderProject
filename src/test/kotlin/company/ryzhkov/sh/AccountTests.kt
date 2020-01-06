@@ -59,14 +59,15 @@ class AccountTests(@Autowired val client: WebTestClient) {
             .expectStatus().isOk
             .expectBody<Account>()
             .consumeWith {
+                Assertions.assertEquals("", it.responseBody?.firstName)
                 Assertions.assertEquals("", it.responseBody?.secondName)
+                Assertions.assertEquals("", it.responseBody?.phoneNumber)
             }
     }
 
     @Test
     fun updateAccountUpdateFirstName() {
         val updateAccount = UpdateAccount("John", "Smith", "")
-        val updateAccountBack = UpdateAccount("", "", "")
 
         client.put().uri("/api/user_area/account")
             .bodyValue(updateAccount)
@@ -86,7 +87,10 @@ class AccountTests(@Autowired val client: WebTestClient) {
             .consumeWith {
                 Assertions.assertEquals("John", it.responseBody?.firstName)
                 Assertions.assertEquals("Smith", it.responseBody?.secondName)
+                Assertions.assertEquals("", it.responseBody?.phoneNumber)
             }
+
+        val updateAccountBack = UpdateAccount("", "", "")
 
         client.put().uri("/api/user_area/account")
             .bodyValue(updateAccountBack)
@@ -101,7 +105,6 @@ class AccountTests(@Autowired val client: WebTestClient) {
     @Test
     fun updateAccountUpdatePhoneNumber() {
         val updateAccount = UpdateAccount("", "", "+7-900-000-0000")
-        val updateAccountBack = UpdateAccount("", "", "")
 
         client.put().uri("/api/user_area/account")
             .bodyValue(updateAccount)
@@ -121,6 +124,8 @@ class AccountTests(@Autowired val client: WebTestClient) {
             .consumeWith {
                 Assertions.assertEquals("+7-900-000-0000", it.responseBody?.phoneNumber)
             }
+
+        val updateAccountBack = UpdateAccount("", "", "")
 
         client.put().uri("/api/user_area/account")
             .bodyValue(updateAccountBack)
@@ -214,8 +219,9 @@ class AccountTests(@Autowired val client: WebTestClient) {
             .accept(APPLICATION_JSON)
             .exchange()
             .expectStatus().isOk
-            .expectBody<Message>().consumeWith { e ->
-                e.responseBody?.text?.startsWith("e")
+            .expectBody<Message>()
+            .consumeWith {
+                Assertions.assertTrue(it.responseBody!!.text!!.startsWith("e"))
             }
 
         val updatePasswordBack = UpdatePassword(
@@ -238,8 +244,8 @@ class AccountTests(@Autowired val client: WebTestClient) {
             .accept(APPLICATION_JSON)
             .exchange()
             .expectStatus().isOk
-            .expectBody<Message>().consumeWith { e ->
-                e.responseBody?.text?.startsWith("e")
+            .expectBody<Message>().consumeWith {
+                Assertions.assertTrue(it.responseBody!!.text!!.startsWith("e"))
             }
     }
 }

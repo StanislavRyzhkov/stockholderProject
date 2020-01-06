@@ -45,6 +45,9 @@ object CreateReplyConstants {
     const val INVALID_INPUT = "Некорректный ввод"
     const val INVALID_REPLY = "Размер сообщения превышает 1000 символов"
     const val REPLY_CREATED = "Комментарий создан"
+    const val WRONG_TEXT_NAME = "Неправильное наименование статьи"
+    const val REPLY_IS_EMPTY = "Пустой комментарий"
+    const val ARTICLE_NAME_IS_EMPTY = "Отсутсвует название статьи"
 }
 
 object RecallConstants {

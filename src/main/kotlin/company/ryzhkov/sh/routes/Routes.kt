@@ -56,7 +56,7 @@ class Routes(
     }
 
     fun replyRouter() = router {
-        ".api/replies".nest {
+        "/api/replies".nest {
             accept(MediaType.APPLICATION_JSON).nest {
                 POST("", articleHandler::createReply)
             }

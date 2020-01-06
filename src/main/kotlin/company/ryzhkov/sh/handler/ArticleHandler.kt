@@ -34,7 +34,7 @@ class ArticleHandler(private val textService: TextService) {
         Mono.zip(serverRequest.toMonoUser(), serverRequest.bodyToMono(CreateReply::class.java).map { it.validate() })
             .map { it.t2 + it.t1 }
             .flatMap { textService.createReply(it) }
-            .flatMap { ok().bodyValue(REPLY_CREATED) }
+            .flatMap { ok().bodyValue(REPLY_CREATED.toMessage()) }
             .onErrorResume (CustomException::class.java) {
                 ServerResponse.badRequest().bodyValue(it.message.toMessage())
             }

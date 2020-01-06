@@ -3,6 +3,7 @@ package company.ryzhkov.sh.service
 import company.ryzhkov.sh.entity.*
 import company.ryzhkov.sh.exception.NotFoundException
 import company.ryzhkov.sh.repository.TextRepository
+import company.ryzhkov.sh.util.CreateReplyConstants.WRONG_TEXT_NAME
 import company.ryzhkov.sh.util.TextConstants.TEXT_NOT_FOUND
 import org.springframework.boot.ApplicationArguments
 import org.springframework.data.domain.PageRequest
@@ -40,7 +41,10 @@ class TextService (
 
     fun createReply(createReplyWithUser: CreateReplyWithUser): Mono<Text> {
         val (englishTitle, content, user) = createReplyWithUser
-        val textMono = textRepository.findByEnglishTitle(englishTitle)
+        val textMono = findTextByEnglishTitle(englishTitle)
+            .onErrorMap(NotFoundException::class.java) {
+                NotFoundException(WRONG_TEXT_NAME)
+            }
         val newReply = Reply(
             username = user.username,
             content = content,

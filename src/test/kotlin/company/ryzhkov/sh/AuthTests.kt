@@ -3,6 +3,7 @@ package company.ryzhkov.sh
 import company.ryzhkov.sh.entity.Auth
 import company.ryzhkov.sh.entity.Message
 import company.ryzhkov.sh.util.UsernameConstants.INVALID_USERNAME_OR_PASSWORD
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -27,8 +28,8 @@ class AuthTests(@Autowired val client: WebTestClient) {
             .accept(APPLICATION_JSON)
             .exchange()
             .expectStatus().isOk
-            .expectBody<Message>().consumeWith { e ->
-                e.responseBody?.text?.startsWith("e")
+            .expectBody<Message>().consumeWith {
+                Assertions.assertTrue(it.responseBody!!.text!!.startsWith("e"))
             }
     }
 
